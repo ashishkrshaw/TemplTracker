@@ -261,7 +261,6 @@ function renderDonorCard(donor, index) {
     if (donor.history.length > 1) {
         historyHtml = `<div class="donation-history">`;
         donor.history.forEach(h => {
-            // Only show history items if they have amount > 0 or it's a pledge note
             if (h.amount > 0 || h.notes) {
                 historyHtml += `
                     <div class="history-item">
@@ -274,25 +273,24 @@ function renderDonorCard(donor, index) {
         historyHtml += `</div>`;
     }
 
-    // Check if dates should be shown (from settings)
-    const showDates = settingsCache.showDates !== false; // Default to true
+    // Check if dates should be shown
+    const showDates = settingsCache.showDates !== false;
 
     return `
         <div class="donation-card" style="animation-delay: ${delay}s">
             <div class="donor-name">${donor.donorName}</div>
             
-            <div class="amount-section">
-               <div class="amount">${donor.amount > 0 ? formatCurrency(donor.amount) : 'Pledged'}</div>
-               <span class="label text-xs">Total Contribution</span>
+            <div class="amount" style="font-size: 1.8rem; font-weight: 700; color: var(--primary-saffron); margin: 0.5rem 0;">
+                ${donor.amount > 0 ? formatCurrency(donor.amount) : 'Pledged'}
             </div>
 
-            ${historyHtml}
-
             ${showDates ? `
-                <div class="meta">
-                    <span class="date">📅 ${formatDate(donor.date)}</span>
+                <div class="date" style="font-size: 0.9rem; color: var(--text-muted);">
+                    📅 ${formatDate(donor.date)}
                 </div>
             ` : ''}
+
+            ${historyHtml}
             ${donor.notes ? `<div class="notes">"${donor.notes}"</div>` : ''}
         </div>
     `;
