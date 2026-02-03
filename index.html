@@ -120,6 +120,40 @@
                     <h3>No donations yet</h3>
                     <p>Donations will appear here once added by admin</p>
                 </div>
+
+                <!-- Community Section -->
+                <div id="communitySection" style="display: none; margin-top: 2rem;">
+                    <div class="category-section">
+                        <div class="category-header">
+                            <h2>💬 Community Board</h2>
+                            <span class="count" id="postCount">0 posts</span>
+                        </div>
+
+                        <!-- Post Form -->
+                        <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                            <h3 style="margin-bottom: 1rem; color: var(--primary-gold); font-size: 1.2rem;">✍️ Share
+                                Anonymously</h3>
+                            <div class="community-rules"
+                                style="background: rgba(255, 107, 53, 0.1); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 1rem; border-left: 3px solid var(--primary-saffron);">
+                                <p style="margin: 0; font-size: 0.85rem;">⚠️ No abuse | Be respectful | Max 500
+                                    characters</p>
+                            </div>
+                            <form id="communityPostForm">
+                                <textarea id="postContent" placeholder="Share your thoughts..." maxlength="500"
+                                    style="width: 100%; min-height: 100px; background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 0.75rem; resize: vertical;"></textarea>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                                    <span id="charCount"
+                                        style="font-size: 0.85rem; color: var(--text-muted);">0/500</span>
+                                    <button type="submit" class="btn btn-primary">📤 Post</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Posts Container -->
+                        <div id="postsContainer"></div>
+                    </div>
+                </div>
             </main>
 
             <!-- Admin Login Modal -->
@@ -167,6 +201,7 @@
                             id="pendingCountBadge">0</span></button>
                     <button class="tab-btn" data-tab="donations">📝 Donations</button>
                     <button class="tab-btn" data-tab="categories">📁 Categories</button>
+                    <button class="tab-btn" data-tab="community">💬 Community</button>
                     <button class="tab-btn" data-tab="subadmins">👥 Sub-Admins</button>
                     <button class="tab-btn" data-tab="logs">📋 Logs</button>
                     <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
@@ -242,6 +277,36 @@
                     </div>
                     <div class="subadmins-list" id="subadminsList">
                         <!-- Sub-admins will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Community Tab -->
+                <div class="tab-content" id="communityTab">
+                    <div class="tab-header">
+                        <h2>💬 Community Moderation</h2>
+                        <button class="btn btn-primary" onclick="loadAdminCommunityPosts()">🔄 Refresh</button>
+                    </div>
+                    <div
+                        style="background: rgba(255, 107, 53, 0.1); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; border-left: 3px solid var(--primary-saffron);">
+                        <p style="margin: 0; font-size: 0.9rem;">⚠️ All posts are logged with IP addresses. You can
+                            delete inappropriate content.</p>
+                    </div>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Content</th>
+                                    <th>IP & Date</th>
+                                    <th>Replies</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="communityPostsTableBody">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; padding: 2rem;">No posts yet</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 

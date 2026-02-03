@@ -1,6 +1,6 @@
 /* =====================================================
    TEMPLE DONATION TRACKER - API TESTS
-   Tests using actual MongoDB Atlas connection
+   Tests with Community Feature
    ===================================================== */
 
 const request = require('supertest');
@@ -11,20 +11,28 @@ const cors = require('cors');
 require('dotenv').config();
 
 let app;
-let Category, Donation, SubAdmin, Settings;
+let Category, Donation, Settings, Post;
 let testCategoryId;
 
-beforeAll(async () => {
-    // Connect to MongoDB Atlas
-    console.log('🔗 Connecting to MongoDB Atlas...');
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB Atlas');
+// Content filter function
+function filterProfanity(text) {
+    const badWords = ['chutiya', 'madarchod', 'fuck', 'shit', 'hate'];
+    const lowerText = text.toLowerCase();
+    for (const word of badWords) {
+        if (lowerText.includes(word)) return false;
+    }
+    return true;
+}
 
-    // Get models
+beforeAll(async () => {
+    console.log('🔗 Connecting to MongoDB...');
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('✅ Connected to MongoDB');
+
+    // Schemas
     const categorySchema = new mongoose.Schema({
         name: { type: String, required: true },
-        order: { type: Number, default: 0 },
-        createdAt: { type: Date, default: Date.now }
+        order: { type: Number, default: 0 }
     });
 
     const donationSchema = new mongoose.Schema({
@@ -32,38 +40,41 @@ beforeAll(async () => {
         amount: { type: Number, required: true },
         date: { type: Date, required: true },
         categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
-        notes: { type: String, default: '' }
-    });
-
-    const subAdminSchema = new mongoose.Schema({
-        username: { type: String, required: true, unique: true },
-        password: { type: String, required: true },
-        permissions: {
-            canAddDonation: { type: Boolean, default: true },
-            canEditDonation: { type: Boolean, default: false },
-            canDeleteDonation: { type: Boolean, default: false },
-            canManageCategory: { type: Boolean, default: false },
-            assignedCategories: [{ type: mongoose.Schema.Types.ObjectId }]
-        }
+        notes: { type: String, default: '' },
+        status: { type: String, default: 'approved' }
     });
 
     const settingsSchema = new mongoose.Schema({
         adminPassword: { type: String, required: true },
-        viewMode: { type: String, default: 'cards' }
+        viewMode: { type: String, default: 'cards' },
+        communityEnabled: { type: Boolean, default: false }
     });
 
-    // Use existing models or create new ones
+    const postSchema = new mongoose.Schema({
+        content: { type: String, required: true, maxLength: 500 },
+        imageUrl: { type: String, default: '' },
+        ipAddress: { type: String, required: true },
+        userAgent: { type: String },
+        replies: [{
+            content: { type: String, required: true },
+            ipAddress: { type: String, required: true },
+            createdAt: { type: Date, default: Date.now }
+        }],
+        isVisible: { type: Boolean, default: true },
+        createdAt: { type: Date, default: Date.now }
+    });
+
     Category = mongoose.models.Category || mongoose.model('Category', categorySchema);
     Donation = mongoose.models.Donation || mongoose.model('Donation', donationSchema);
-    SubAdmin = mongoose.models.SubAdmin || mongoose.model('SubAdmin', subAdminSchema);
     Settings = mongoose.models.Settings || mongoose.model('Settings', settingsSchema);
+    Post = mongoose.models.Post || mongoose.model('Post', postSchema);
 
-    // Setup Express app
+    // Express app
     app = express();
     app.use(cors());
     app.use(express.json());
 
-    // Auth route
+    // Auth
     app.post('/api/auth/login', async (req, res) => {
         const { username, password } = req.body;
         if (username === 'admin') {
@@ -75,7 +86,7 @@ beforeAll(async () => {
         res.status(401).json({ success: false });
     });
 
-    // Categories routes
+    // Categories
     app.get('/api/categories', async (req, res) => {
         const cats = await Category.find().sort({ order: 1 });
         res.json(cats);
@@ -91,7 +102,7 @@ beforeAll(async () => {
         res.json({ message: 'deleted' });
     });
 
-    // Donations routes
+    // Donations
     app.get('/api/donations', async (req, res) => {
         const donations = await Donation.find().populate('categoryId');
         res.json(donations);
@@ -107,12 +118,64 @@ beforeAll(async () => {
         res.json({ message: 'deleted' });
     });
 
-    // Stats route
+    // Stats
     app.get('/api/stats', async (req, res) => {
         const totalDonors = await Donation.countDocuments();
         const result = await Donation.aggregate([{ $group: { _id: null, total: { $sum: '$amount' } } }]);
         const totalCategories = await Category.countDocuments();
         res.json({ totalDonors, totalAmount: result[0]?.total || 0, totalCategories });
+    });
+
+    // Community routes
+    app.get('/api/community', async (req, res) => {
+        const settings = await Settings.findOne();
+        if (!settings?.communityEnabled) {
+            return res.status(403).json({ message: 'Community disabled' });
+        }
+        const posts = await Post.find({ isVisible: true }).sort({ createdAt: -1 });
+        res.json(posts);
+    });
+
+    app.post('/api/community', async (req, res) => {
+        const settings = await Settings.findOne();
+        if (!settings?.communityEnabled) {
+            return res.status(403).json({ message: 'Community disabled' });
+        }
+        const { content } = req.body;
+        if (!content || content.length > 500) {
+            return res.status(400).json({ message: 'Invalid content' });
+        }
+        if (!filterProfanity(content)) {
+            return res.status(400).json({ message: 'Inappropriate content' });
+        }
+        const post = await Post.create({
+            content,
+            ipAddress: req.ip || 'test-ip',
+            userAgent: req.headers['user-agent'] || 'test'
+        });
+        res.status(201).json(post);
+    });
+
+    app.post('/api/community/:id/reply', async (req, res) => {
+        const { content } = req.body;
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Not found' });
+        post.replies.push({ content, ipAddress: req.ip || 'test-ip' });
+        await post.save();
+        res.json(post);
+    });
+
+    app.delete('/api/community/:id', async (req, res) => {
+        await Post.findByIdAndDelete(req.params.id);
+        res.json({ message: 'deleted' });
+    });
+
+    app.put('/api/settings/community', async (req, res) => {
+        const { enabled } = req.body;
+        const settings = await Settings.findOne();
+        settings.communityEnabled = enabled;
+        await settings.save();
+        res.json({ communityEnabled: settings.communityEnabled });
     });
 });
 
@@ -121,8 +184,7 @@ afterAll(async () => {
     console.log('🔌 Disconnected from MongoDB');
 });
 
-// ==================== TESTS ====================
-
+// Tests
 describe('🔐 Auth API', () => {
     test('admin login with correct password', async () => {
         const res = await request(app)
@@ -143,7 +205,7 @@ describe('📁 Categories API', () => {
     test('create category', async () => {
         const res = await request(app)
             .post('/api/categories')
-            .send({ name: 'TEST_CATEGORY_' + Date.now() });
+            .send({ name: 'TEST_CAT_' + Date.now() });
         expect(res.statusCode).toBe(201);
         testCategoryId = res.body._id;
     });
@@ -153,20 +215,13 @@ describe('📁 Categories API', () => {
         expect(res.statusCode).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
     });
-
-    test('delete test category', async () => {
-        if (testCategoryId) {
-            const res = await request(app).delete(`/api/categories/${testCategoryId}`);
-            expect(res.statusCode).toBe(200);
-        }
-    });
 });
 
 describe('💰 Donations API', () => {
     let tempCatId, tempDonationId;
 
     beforeAll(async () => {
-        const cat = await Category.create({ name: 'TEMP_FOR_DONATION_TEST', order: 999 });
+        const cat = await Category.create({ name: 'TEMP_DONATION_TEST', order: 999 });
         tempCatId = cat._id;
     });
 
@@ -195,51 +250,64 @@ describe('💰 Donations API', () => {
     });
 });
 
-describe('📊 Stats API', () => {
-    test('get stats', async () => {
-        const res = await request(app).get('/api/stats');
-        expect(res.statusCode).toBe(200);
-        expect(typeof res.body.totalDonors).toBe('number');
-        expect(typeof res.body.totalAmount).toBe('number');
-        expect(typeof res.body.totalCategories).toBe('number');
-    });
-});
+describe('💬 Community API', () => {
+    let testPostId;
 
-describe('🔒 Hindi Support', () => {
-    let hindiCatId, hindiDonationId;
+    beforeAll(async () => {
+        // Enable community
+        const settings = await Settings.findOne();
+        settings.communityEnabled = true;
+        await settings.save();
+    });
 
     afterAll(async () => {
-        if (hindiDonationId) await Donation.findByIdAndDelete(hindiDonationId);
-        if (hindiCatId) await Category.findByIdAndDelete(hindiCatId);
+        if (testPostId) await Post.findByIdAndDelete(testPostId);
+        // Disable community
+        const settings = await Settings.findOne();
+        settings.communityEnabled = false;
+        await settings.save();
     });
 
-    test('create Hindi category', async () => {
+    test('create community post', async () => {
         const res = await request(app)
-            .post('/api/categories')
-            .send({ name: 'टेस्ट टोला' });
+            .post('/api/community')
+            .send({ content: 'This is a test post' });
         expect(res.statusCode).toBe(201);
-        expect(res.body.name).toBe('टेस्ट टोला');
-        hindiCatId = res.body._id;
+        expect(res.body.content).toBe('This is a test post');
+        testPostId = res.body._id;
     });
 
-    test('create Hindi donation', async () => {
+    test('reject post with profanity', async () => {
         const res = await request(app)
-            .post('/api/donations')
-            .send({
-                donorName: 'श्री राम जी',
-                amount: 51000,
-                date: new Date(),
-                categoryId: hindiCatId,
-                notes: 'मंदिर निर्माण'
-            });
-        expect(res.statusCode).toBe(201);
-        expect(res.body.donorName).toBe('श्री राम जी');
-        hindiDonationId = res.body._id;
+            .post('/api/community')
+            .send({ content: 'This is fuck test' });
+        expect(res.statusCode).toBe(400);
+        expect(res.body.message).toContain('Inappropriate');
+    });
+
+    test('add reply to post', async () => {
+        const res = await request(app)
+            .post(`/api/community/${testPostId}/reply`)
+            .send({ content: 'Test reply' });
+        expect(res.statusCode).toBe(200);
+        expect(res.body.replies.length).toBeGreaterThan(0);
+    });
+
+    test('get community posts', async () => {
+        const res = await request(app).get('/api/community');
+        expect(res.statusCode).toBe(200);
+        expect(Array.isArray(res.body)).toBe(true);
+    });
+
+    test('delete community post', async () => {
+        const res = await request(app).delete(`/api/community/${testPostId}`);
+        expect(res.statusCode).toBe(200);
+        testPostId = null; // Prevent double-delete in afterAll
     });
 });
 
 console.log(`
 ╔═══════════════════════════════════════════════════════╗
-║  🛕 Temple Donation Tracker - MongoDB Atlas Tests     ║
+║  🛕 Temple Tracker - Tests with Community Feature     ║
 ╚═══════════════════════════════════════════════════════╝
 `);

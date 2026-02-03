@@ -1466,6 +1466,32 @@ async function approveDonation(id) {
     }
 }
 
+// ==================== SEARCH & FILTER EVENT LISTENERS ====================
+
+// Search input - real-time filtering
+document.getElementById('searchInput')?.addEventListener('input', (e) => {
+    const searchTerm = e.target.value;
+    const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+    const statusFilter = document.getElementById('paymentStatusFilter')?.value || '';
+    renderPublicView(searchTerm, categoryFilter, statusFilter);
+});
+
+// Category filter
+document.getElementById('categoryFilter')?.addEventListener('change', (e) => {
+    const searchTerm = document.getElementById('searchInput')?.value || '';
+    const categoryFilter = e.target.value;
+    const statusFilter = document.getElementById('paymentStatusFilter')?.value || '';
+    renderPublicView(searchTerm, categoryFilter, statusFilter);
+});
+
+// Payment status filter (Paid vs Pledged)
+document.getElementById('paymentStatusFilter')?.addEventListener('change', (e) => {
+    const searchTerm = document.getElementById('searchInput')?.value || '';
+    const categoryFilter = document.getElementById('categoryFilter')?.value || '';
+    const statusFilter = e.target.value;
+    renderPublicView(searchTerm, categoryFilter, statusFilter);
+});
+
 // ==================== HIDDEN ADMIN TRIGGER ====================
 
 function setupAdminTrigger() {
@@ -1492,8 +1518,210 @@ window.downloadPDF = downloadPDF;
 window.approveDonation = approveDonation;
 window.renderPendingApprovals = renderPendingApprovals;
 
+// ==================== COMMUNITY FEATURE ====================
+
+let communityEnabled = false;
+
+// Load community posts
+async function loadCommunityPosts() {
+    try {
+        const posts = await apiGet('/api/community');
+        renderCommunityPosts(posts);
+    } catch (error) {
+        console.error('Error loading community posts:', error);
+    }
+}
+
+// Render community posts
+function renderCommunityPosts(posts) {
+    const container = document.getElementById('postsContainer');
+    const countEl = document.getElementById('postCount');
+
+    if (!container) return;
+
+    countEl.textContent = `${posts.length} posts`;
+
+    if (posts.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No posts yet. Be the first to share!</p>';
+        return;
+    }
+
+    container.innerHTML = posts.map(post => `
+        <div class="community-post glass-card" style="padding: 1.25rem; margin-bottom: 1rem; border-radius: var(--radius-md);">
+            <div class="post-content" style="margin-bottom: 0.75rem; line-height: 1.6;">
+                ${post.content}
+            </div>
+            <div class="post-meta" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                📅 ${formatDate(post.createdAt)}
+            </div>
+            
+            ${post.replies.length > 0 ? `
+                <div class="post-replies" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">💬 ${post.replies.length} replies</div>
+                    ${post.replies.map(reply => `
+                        <div class="reply-item" style="background: rgba(255, 255, 255, 0.02); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 0.5rem; border-left: 2px solid var(--primary-gold);">
+                            <div style="font-size: 0.9rem; margin-bottom: 0.25rem;">${reply.content}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">📅 ${formatDate(reply.createdAt)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+            
+            <div class="reply-form" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
+                <form onsubmit="handleReplySubmit(event, '${post._id}')">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" placeholder="Add a reply..." maxlength="300" style="flex: 1; background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 0.5rem;" required>
+                        <button type="submit" class="btn btn-sm btn-primary">Reply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Handle post submission
+document.getElementById('communityPostForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const content = document.getElementById('postContent').value.trim();
+
+    if (!content) {
+        showToast('Please enter some content', 'error');
+        return;
+    }
+
+    try {
+        await apiPost('/api/community', { content });
+        document.getElementById('postContent').value = '';
+        document.getElementById('charCount').textContent = '0/500';
+        showToast('Post created successfully!', 'success');
+        await loadCommunityPosts();
+    } catch (error) {
+        showToast(error.message || 'Failed to create post', 'error');
+    }
+});
+
+// Character counter
+document.getElementById('postContent')?.addEventListener('input', (e) => {
+    const count = e.target.value.length;
+    document.getElementById('charCount').textContent = `${count}/500`;
+});
+
+// Handle reply submission
+window.handleReplySubmit = async function (event, postId) {
+    event.preventDefault();
+    const input = event.target.querySelector('input');
+    const content = input.value.trim();
+
+    if (!content) return;
+
+    try {
+        await apiPost(`/api/community/${postId}/reply`, { content });
+        input.value = '';
+        showToast('Reply added!', 'success');
+        await loadCommunityPosts();
+    } catch (error) {
+        showToast(error.message || 'Failed to add reply', 'error');
+    }
+};
+
+// Load community settings and toggle visibility
+async function loadCommunitySettings() {
+    try {
+        const settings = await apiGet('/api/settings');
+        communityEnabled = settings.communityEnabled || false;
+
+        const section = document.getElementById('communitySection');
+        if (section) {
+            section.style.display = communityEnabled ? 'block' : 'none';
+        }
+
+        const toggle = document.getElementById('communityToggle');
+        if (toggle) {
+            toggle.checked = communityEnabled;
+        }
+
+        if (communityEnabled) {
+            await loadCommunityPosts();
+        }
+    } catch (error) {
+        console.error('Error loading community settings:', error);
+    }
+}
+
+// Toggle community feature
+window.toggleCommunity = async function () {
+    const toggle = document.getElementById('communityToggle');
+    const enabled = toggle.checked;
+
+    try {
+        await apiPut('/api/settings/community', { enabled });
+        communityEnabled = enabled;
+
+        const section = document.getElementById('communitySection');
+        if (section) {
+            section.style.display = enabled ? 'block' : 'none';
+        }
+
+        showToast(`Community ${enabled ? 'enabled' : 'disabled'}`, 'success');
+
+        if (enabled) {
+            await loadCommunityPosts();
+        }
+    } catch (error) {
+        showToast('Failed to toggle community', 'error');
+        toggle.checked = !enabled;
+    }
+};
+
+// Load admin community posts (with IP logs)
+async function loadAdminCommunityPosts() {
+    try {
+        const posts = await apiGet('/api/community/admin');
+        renderAdminCommunityPosts(posts);
+    } catch (error) {
+        console.error('Error loading admin posts:', error);
+    }
+}
+
+// Render admin community posts
+function renderAdminCommunityPosts(posts) {
+    const tbody = document.getElementById('communityPostsTableBody');
+    if (!tbody) return;
+
+    if (posts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem;">No posts yet</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = posts.map(post => `
+        <tr>
+            <td style="max-width: 300px; word-wrap: break-word;">${post.content}</td>
+            <td><code style="font-size: 0.75rem;">${post.ipAddress}</code><br><small>${formatDate(post.createdAt)}</small></td>
+            <td>${post.replies.length}</td>
+            <td>
+                <button class="btn btn-sm btn-danger" onclick="deletePost('${post._id}')">🗑️ Delete</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Delete post
+window.deletePost = async function (id) {
+    if (!confirm('Delete this post?')) return;
+
+    try {
+        await apiDelete(`/api/community/${id}`);
+        showToast('Post deleted', 'success');
+        await loadAdminCommunityPosts();
+        await loadCommunityPosts();
+    } catch (error) {
+        showToast('Failed to delete post', 'error');
+    }
+};
+
 // Initialize additional listeners
 document.addEventListener('DOMContentLoaded', () => {
     setupAdminTrigger();
     handleSplash();
+    loadCommunitySettings();
 });

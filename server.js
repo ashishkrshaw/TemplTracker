@@ -61,7 +61,8 @@ const subAdminSchema = new mongoose.Schema({
 // Settings Schema
 const settingsSchema = new mongoose.Schema({
     adminPassword: { type: String, required: true },
-    viewMode: { type: String, enum: ['cards', 'list'], default: 'cards' }
+    viewMode: { type: String, enum: ['cards', 'list'], default: 'cards' },
+    communityEnabled: { type: Boolean, default: false }
 });
 
 // Activity Log Schema (NON-DELETABLE)
@@ -76,12 +77,29 @@ const activityLogSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now }
 });
 
+// Community Post Schema
+const postSchema = new mongoose.Schema({
+    content: { type: String, required: true, maxLength: 500 },
+    imageUrl: { type: String, default: '' },
+    ipAddress: { type: String, required: true },
+    userAgent: { type: String },
+    replies: [{
+        content: { type: String, required: true, maxLength: 300 },
+        ipAddress: { type: String, required: true },
+        userAgent: { type: String },
+        createdAt: { type: Date, default: Date.now }
+    }],
+    isVisible: { type: Boolean, default: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
 // Models
 const Category = mongoose.model('Category', categorySchema);
 const Donation = mongoose.model('Donation', donationSchema);
 const SubAdmin = mongoose.model('SubAdmin', subAdminSchema);
 const Settings = mongoose.model('Settings', settingsSchema);
 const ActivityLog = mongoose.model('ActivityLog', activityLogSchema);
+const Post = mongoose.model('Post', postSchema);
 
 // Log helper function
 async function createLog(req, action, entity, entityId, details) {
@@ -102,6 +120,28 @@ async function createLog(req, action, entity, entityId, details) {
     } catch (error) {
         console.error('Error creating log:', error);
     }
+}
+
+// Content moderation filter
+function filterProfanity(text) {
+    const badWords = [
+        // Hindi abusive words (transliterated)
+        'chutiya', 'madarchod', 'bhenchod', 'bhosdike', 'gandu', 'harami',
+        'kutta', 'kamina', 'saala', 'randi', 'lavde', 'gaandu',
+        // English abusive words
+        'fuck', 'shit', 'ass', 'bitch', 'bastard', 'damn', 'hell',
+        'idiot', 'stupid', 'hate', 'kill', 'die', 'death'
+    ];
+
+    const lowerText = text.toLowerCase();
+
+    for (const word of badWords) {
+        if (lowerText.includes(word)) {
+            return false; // Contains profanity
+        }
+    }
+
+    return true; // Clean content
 }
 
 // ==================== INITIALIZE DEFAULT DATA ====================
@@ -549,6 +589,156 @@ app.get('/api/stats', async (req, res) => {
             totalAmount: totalAmount[0]?.total || 0,
             totalCategories
         });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// ==================== COMMUNITY ROUTES ====================
+
+// Get public posts (visible only)
+app.get('/api/community', async (req, res) => {
+    try {
+        const settings = await Settings.findOne();
+        if (!settings?.communityEnabled) {
+            return res.status(403).json({ message: 'Community feature is disabled' });
+        }
+
+        const posts = await Post.find({ isVisible: true })
+            .sort({ createdAt: -1 })
+            .limit(50);
+        res.json(posts);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get all posts (admin only, with IP info)
+app.get('/api/community/admin', async (req, res) => {
+    try {
+        const posts = await Post.find()
+            .sort({ createdAt: -1 });
+        res.json(posts);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Create anonymous post
+app.post('/api/community', async (req, res) => {
+    try {
+        const settings = await Settings.findOne();
+        if (!settings?.communityEnabled) {
+            return res.status(403).json({ message: 'Community feature is disabled' });
+        }
+
+        const { content, imageUrl } = req.body;
+
+        if (!content || content.trim().length === 0) {
+            return res.status(400).json({ message: 'Content is required' });
+        }
+
+        if (content.length > 500) {
+            return res.status(400).json({ message: 'Content must be 500 characters or less' });
+        }
+
+        // Content moderation
+        if (!filterProfanity(content)) {
+            return res.status(400).json({
+                message: 'Your post contains inappropriate content. Please be respectful.'
+            });
+        }
+
+        const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
+        const userAgent = req.headers['user-agent'] || '';
+
+        const post = await Post.create({
+            content: content.trim(),
+            imageUrl: imageUrl || '',
+            ipAddress,
+            userAgent
+        });
+
+        res.status(201).json(post);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Add reply to post
+app.post('/api/community/:id/reply', async (req, res) => {
+    try {
+        const settings = await Settings.findOne();
+        if (!settings?.communityEnabled) {
+            return res.status(403).json({ message: 'Community feature is disabled' });
+        }
+
+        const { content } = req.body;
+
+        if (!content || content.trim().length === 0) {
+            return res.status(400).json({ message: 'Reply content is required' });
+        }
+
+        if (content.length > 300) {
+            return res.status(400).json({ message: 'Reply must be 300 characters or less' });
+        }
+
+        if (!filterProfanity(content)) {
+            return res.status(400).json({
+                message: 'Your reply contains inappropriate content. Please be respectful.'
+            });
+        }
+
+        const ipAddress = req.ip || req.connection?.remoteAddress || 'unknown';
+        const userAgent = req.headers['user-agent'] || '';
+
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        post.replies.push({
+            content: content.trim(),
+            ipAddress,
+            userAgent
+        });
+
+        await post.save();
+        res.json(post);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Delete post (admin only)
+app.delete('/api/community/:id', async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        await Post.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Post deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Toggle community feature (admin only)
+app.put('/api/settings/community', async (req, res) => {
+    try {
+        const { enabled } = req.body;
+        const settings = await Settings.findOne();
+
+        if (!settings) {
+            return res.status(404).json({ message: 'Settings not found' });
+        }
+
+        settings.communityEnabled = enabled;
+        await settings.save();
+
+        res.json({ communityEnabled: settings.communityEnabled });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
