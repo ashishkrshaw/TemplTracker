@@ -254,7 +254,6 @@ function renderPublicView(searchTerm = '', categoryFilter = '', statusFilter = '
 
 // Render grouped donor card
 function renderDonorCard(donor, index) {
-    const category = donor.categoryId?.name || 'Unknown';
     const delay = index * 0.1;
 
     // Create history list if more than 1 donation
@@ -275,6 +274,9 @@ function renderDonorCard(donor, index) {
         historyHtml += `</div>`;
     }
 
+    // Check if dates should be shown (from settings)
+    const showDates = settingsCache.showDates !== false; // Default to true
+
     return `
         <div class="donation-card" style="animation-delay: ${delay}s">
             <div class="donor-name">${donor.donorName}</div>
@@ -286,10 +288,11 @@ function renderDonorCard(donor, index) {
 
             ${historyHtml}
 
-            <div class="meta">
-                <span class="category-tag">${category}</span>
-                <span class="date">📅 Last: ${formatDate(donor.date)}</span>
-            </div>
+            ${showDates ? `
+                <div class="meta">
+                    <span class="date">📅 ${formatDate(donor.date)}</span>
+                </div>
+            ` : ''}
             ${donor.notes ? `<div class="notes">"${donor.notes}"</div>` : ''}
         </div>
     `;
@@ -1670,6 +1673,27 @@ window.toggleCommunity = async function () {
     } catch (error) {
         showToast('Failed to toggle community', 'error');
         toggle.checked = !enabled;
+    }
+};
+
+// Toggle show dates on cards
+window.toggleShowDates = async function () {
+    const toggle = document.getElementById('showDatesToggle');
+    const showDates = toggle.checked;
+
+    try {
+        await apiPut('/api/settings/showDates', { showDates });
+
+        // Update cache
+        settingsCache.showDates = showDates;
+
+        // Re-render public view
+        renderPublicView();
+
+        showToast(`Dates ${showDates ? 'shown' : 'hidden'}`, 'success');
+    } catch (error) {
+        showToast('Failed to update setting', 'error');
+        toggle.checked = !showDates;
     }
 };
 

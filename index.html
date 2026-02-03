@@ -1,12 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🙏 Temple Building Donation Tracker</title>
+    <meta name="google-site-verification" content="googleda46b72a7e2e6d3c" />
+
+    <!-- Primary Meta Tags -->
+    <title>बद्दीहा हनुमान मंदिर निर्माण | Baddiha Mandir Donation Tracker | Giridih Jharkhand</title>
+    <meta name="title" content="बद्दीहा हनुमान मंदिर निर्माण | Baddiha Mandir Donation Tracker">
     <meta name="description"
-        content="Track and view donations for temple building construction. See donor names, amounts, and dates.">
+        content="बद्दीहा हनुमान मंदिर निर्माण के लिए दान ट्रैकर। Baddiha Hanuman Mandir, Bajrangbali Mandir Baddiha, Giridih Jharkhand. Track temple building donations and contributions.">
+    <meta name="keywords"
+        content="baddiha, baddiha mandir, baddiha hanuman mandir, bajrangbali mandir baddiha, baddiha mandir nirmaan, hanuman temple baddiha, giridih jharkhand temple, baddiha temple construction, baddiha ashish, ashish baddiha, बद्दीहा मंदिर, बद्दीहा हनुमान मंदिर, गिरिडीह झारखण्ड">
+    <meta name="author" content="Baddiha Hanuman Mandir Committee">
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="Hindi, English">
+    <meta name="revisit-after" content="7 days">
+    <meta name="geo.region" content="IN-JH">
+    <meta name="geo.placename" content="Baddiha, Giridih, Jharkhand">
+    <meta name="geo.position" content="24.1833;86.3000">
+    <meta name="ICBM" content="24.1833, 86.3000">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://your-domain.com/">
+    <meta property="og:title" content="बद्दीहा हनुमान मंदिर निर्माण | Baddiha Mandir Giridih">
+    <meta property="og:description"
+        content="बद्दीहा हनुमान मंदिर निर्माण के लिए दान करें। Baddiha Hanuman Mandir, Giridih Jharkhand - Track temple donations and construction progress.">
+    <meta property="og:locale" content="hi_IN">
+    <meta property="og:locale:alternate" content="en_IN">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="बद्दीहा हनुमान मंदिर निर्माण | Baddiha Mandir">
+    <meta property="twitter:description" content="Baddiha Hanuman Mandir construction donations - Giridih Jharkhand">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "HinduTemple",
+      "name": "बद्दीहा हनुमान मंदिर | Baddiha Hanuman Mandir",
+      "alternateName": ["Bajrangbali Mandir Baddiha", "बद्दीहा बजरंगबली मंदिर"],
+      "description": "Hanuman temple construction in Baddiha village, dedicated to Lord Bajrangbali",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Baddiha",
+        "addressRegion": "Giridih",
+        "addressCountry": "IN",
+        "postalCode": "815301"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "24.1833",
+        "longitude": "86.3000"
+      },
+      "url": "https://your-domain.com",
+      "telephone": "+91-XXXXXXXXXX",
+      "priceRange": "Free Entry",
+      "openingHours": "Mo-Su 06:00-20:00",
+      "founder": {
+        "@type": "Organization",
+        "name": "Baddiha Mandir Nirmaan Samiti"
+      },
+      "keywords": "baddiha mandir, baddiha hanuman mandir, giridih jharkhand temple, bajrangbali mandir"
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -369,6 +430,14 @@
                         <div class="setting-item">
                             <label>Change Admin Password</label>
                             <button class="btn btn-outline" onclick="openChangePasswordModal()">Change Password</button>
+                        </div>
+                        <div class="setting-item">
+                            <label>📅 Show Dates on Cards</label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="showDatesToggle" onchange="toggleShowDates()" checked
+                                    style="width: 18px; height: 18px;">
+                                <span style="font-size: 0.9rem;">Display dates on donation cards</span>
+                            </label>
                         </div>
                         <div class="setting-item">
                             <label>Export Data</label>

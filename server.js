@@ -62,7 +62,8 @@ const subAdminSchema = new mongoose.Schema({
 const settingsSchema = new mongoose.Schema({
     adminPassword: { type: String, required: true },
     viewMode: { type: String, enum: ['cards', 'list'], default: 'cards' },
-    communityEnabled: { type: Boolean, default: false }
+    communityEnabled: { type: Boolean, default: false },
+    showDates: { type: Boolean, default: true }
 });
 
 // Activity Log Schema (NON-DELETABLE)
@@ -739,6 +740,25 @@ app.put('/api/settings/community', async (req, res) => {
         await settings.save();
 
         res.json({ communityEnabled: settings.communityEnabled });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Toggle show dates on cards (admin only)
+app.put('/api/settings/showDates', async (req, res) => {
+    try {
+        const { showDates } = req.body;
+        const settings = await Settings.findOne();
+
+        if (!settings) {
+            return res.status(404).json({ message: 'Settings not found' });
+        }
+
+        settings.showDates = showDates;
+        await settings.save();
+
+        res.json({ showDates: settings.showDates });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
