@@ -1233,6 +1233,176 @@ openLoginModal = function () {
     document.getElementById('captchaInput').value = '';
 }
 
+// ==================== PDF/PRINT EXPORT ====================
+
+function downloadPDF() {
+    // Mobile-friendly print function
+    try {
+        // Hide admin controls before printing
+        const adminBtn = document.querySelector('.admin-btn');
+        const controls = document.querySelector('.controls-bar');
+        const originalDisplay = controls ? controls.style.display : '';
+        const originalAdminDisplay = adminBtn ? adminBtn.style.display : '';
+
+        if (controls) controls.style.display = 'none';
+        if (adminBtn) adminBtn.style.display = 'none';
+
+        // Trigger print
+        window.print();
+
+        // Restore after print
+        setTimeout(() => {
+            if (controls) controls.style.display = originalDisplay;
+            if (adminBtn) adminBtn.style.display = originalAdminDisplay;
+        }, 100);
+
+        showToast('Print dialog opened. Save as PDF from print options.', 'success');
+    } catch (error) {
+        showToast('Please use your browser\'s print function (Ctrl+P)', 'info');
+    }
+}
+
+// Export button handler
+if (document.getElementById('exportBtn')) {
+    document.getElementById('exportBtn').addEventListener('click', downloadPDF);
+}
+
+// ==================== CSV IMPORT ====================
+
+// Populate category dropdown in CSV import modal
+function populateCSVCategories() {
+    const select = document.getElementById('csvCategoryId');
+    if (select) {
+        select.innerHTML = '<option value="">Choose category...</option>';
+        allCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat._id;
+            option.textContent = cat.name;
+            select.appendChild(option);
+        });
+    }
+}
+
+// Call this when categories are loaded
+window.addEventListener('categoriesLoaded', populateCSVCategories);
+
+// Parse CSV file
+function parseCSV(text, hasHeaders) {
+    const lines = text.split('\n').filter(line => line.trim());
+    const data = [];
+
+    const startIndex = hasHeaders ? 1 : 0;
+
+    for (let i = startIndex; i < lines.length; i++) {
+        const line = lines[i];
+        // Simple CSV parsing (handles basic cases)
+        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+
+        if (values.length >= 3) {
+            data.push({
+                name: values[0],
+                rashi: values[1],
+                dinank: values[2]
+            });
+        }
+    }
+
+    return data;
+}
+
+// Handle CSV file selection
+document.getElementById('csvFile')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+        const text = await file.text();
+        const hasHeaders = document.getElementById('csvHasHeaders').checked;
+        const data = parseCSV(text, hasHeaders);
+
+        // Show preview
+        const preview = document.getElementById('csvPreview');
+        const previewContent = document.getElementById('csvPreviewContent');
+
+        if (data.length > 0) {
+            preview.style.display = 'block';
+            previewContent.innerHTML = `
+                <p>Found ${data.length} rows</p>
+                <table style="width: 100%; font-size: 0.9rem;">
+                    <tr><th>Name</th><th>Amount</th><th>Date</th></tr>
+                    ${data.slice(0, 5).map(row => `
+                        <tr>
+                            <td>${row.name}</td>
+                            <td>${row.rashi}</td>
+                            <td>${row.dinank}</td>
+                        </tr>
+                    `).join('')}
+                    ${data.length > 5 ? '<tr><td colspan="3">... and ' + (data.length - 5) + ' more</td></tr>' : ''}
+                </table>
+            `;
+        }
+    }
+});
+
+// Handle CSV import form submission
+document.getElementById('csvImportForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const categoryId = document.getElementById('csvCategoryId').value;
+    const file = document.getElementById('csvFile').files[0];
+    const hasHeaders = document.getElementById('csvHasHeaders').checked;
+
+    if (!file || !categoryId) {
+        showToast('Please select both category and CSV file', 'error');
+        return;
+    }
+
+    try {
+        const text = await file.text();
+        const data = parseCSV(text, hasHeaders);
+
+        if (data.length === 0) {
+            showToast('No valid data found in CSV', 'error');
+            return;
+        }
+
+        showToast(`Importing ${data.length} donations...`, 'info');
+
+        let successCount = 0;
+        let errorCount = 0;
+
+        // Import donations one by one or in batches
+        for (const row of data) {
+            try {
+                await apiPost('/api/donations', {
+                    donorName: row.name,
+                    amount: parseFloat(row.rashi) || 0,
+                    date: row.dinank || new Date().toISOString(),
+                    categoryId: categoryId,
+                    notes: ''
+                });
+                successCount++;
+            } catch (error) {
+                errorCount++;
+                console.error('Error importing row:', row, error);
+            }
+        }
+
+        closeModal('csvImportModal');
+        document.getElementById('csvImportForm').reset();
+        document.getElementById('csvPreview').style.display = 'none';
+
+        showToast(`Import complete! Success: ${successCount}, Errors: ${errorCount}`, 'success');
+
+        // Refresh data
+        await loadDonations();
+        renderPublicView();
+        if (currentUser) {
+            renderDonationsTable();
+        }
+    } catch (error) {
+        showToast('Error importing CSV: ' + error.message, 'error');
+    }
+});
+
 // ==================== APPROVALS WORKFLOW ====================
 
 function renderPendingApprovals() {

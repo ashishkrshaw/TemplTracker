@@ -101,6 +101,9 @@
                             <option value="">All Categories</option>
                         </select>
                     </div>
+                    <button id="exportBtn" class="export-btn" title="Export/Print">
+                        📄 Export
+                    </button>
                     <button class="btn btn-outline download-btn" onclick="downloadPDF()">
                         📄 Download PDF
                     </button>
@@ -196,9 +199,10 @@
                 <!-- Donations Tab -->
                 <div class="tab-content" id="donationsTab">
                     <div class="tab-header">
-                        <h3>Manage Donations</h3>
-                        <button class="btn btn-primary" onclick="openAddDonationModal()" id="addDonationBtn">+ Add
-                            Donation</button>
+                        <h2>💰 Manage Donations</h2>
+                        <button class="btn btn-primary" onclick="openModal('donationModal')">➕ Add Donation</button>
+                        <button class="btn btn-secondary" onclick="openModal('csvImportModal')"
+                            style="margin-left: 0.5rem;">📤 Import CSV</button>
                     </div>
                     <div class="admin-table-container">
                         <table class="admin-table" id="donationsTable">
@@ -444,6 +448,42 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Update Password</button>
                     </form>
+                </div>
+            </div>
+
+            <!-- CSV Import Modal -->
+            <div class="modal" id="csvImportModal">
+                <div class="modal-content glass-card">
+                    <div class="modal-header">
+                        <h2>📤 Import Donations from CSV</h2>
+                        <button class="close-btn" onclick="closeModal('csvImportModal')">&times;</button>
+                    </div>
+                    <form id="csvImportForm">
+                        <div class="form-group">
+                            <label>Select Category / टोला *</label>
+                            <select id="csvCategoryId" required>
+                                <option value="">Choose category...</option>
+                            </select>
+                            <small class="form-hint">All imported donations will be added to this category</small>
+                        </div>
+                        <div class="form-group">
+                            <label>CSV File *</label>
+                            <input type="file" id="csvFile" accept=".csv" required>
+                            <small class="form-hint">CSV columns: "name" (donor), "rashi" (amount), "dinank"
+                                (date)</small>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="csvHasHeaders" checked>
+                                <span>File has header row</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">⬆ Import Data</button>
+                    </form>
+                    <div id="csvPreview" style="margin-top: 1rem; max-height: 200px; overflow-y: auto; display: none;">
+                        <h4>Preview:</h4>
+                        <div id="csvPreviewContent"></div>
+                    </div>
                 </div>
             </div>
 

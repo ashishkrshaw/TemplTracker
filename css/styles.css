@@ -244,6 +244,45 @@ body {
     }
 }
 
+/* Hanuman Image with Gradient Blend */
+.hanuman-container {
+    position: fixed;
+    bottom: 0;
+    right: 2rem;
+    width: 300px;
+    height: 400px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+}
+
+.hanuman-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 30px rgba(255, 107, 53, 0.5));
+    /* Black to Orange gradient blend */
+    mask-image: linear-gradient(to top,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.3) 30%,
+            rgba(0, 0, 0, 0.6) 60%,
+            rgba(0, 0, 0, 0.9) 100%);
+    -webkit-mask-image: linear-gradient(to top,
+            rgba(0, 0, 0, 0) 0%,
+            rgba(0, 0, 0, 0.3) 30%,
+            rgba(0, 0, 0, 0.6) 60%,
+            rgba(0, 0, 0, 0.9) 100%);
+}
+
+@media (max-width: 768px) {
+    .hanuman-container {
+        width: 150px;
+        height: 200px;
+        right: 0.5rem;
+        opacity: 0.2;
+    }
+}
+
 /* Floating Particles */
 .floating-particles {
     position: absolute;
@@ -904,6 +943,46 @@ body {
     background: transparent;
     color: var(--text-primary);
     outline: none;
+}
+
+/* Export Button */
+.export-btn,
+.btn-secondary {
+    background: var(--glass-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-normal);
+    font-size: 0.9rem;
+}
+
+.export-btn:hover,
+.btn-secondary:hover {
+    background: var(--primary-gold);
+    color: var(--bg-dark);
+    transform: translateY(-2px);
+}
+
+/* File Input Styling */
+input[type="file"] {
+    padding: 0.5rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    width: 100%;
+}
+
+input[type="file"]::file-selector-button {
+    background: var(--primary-gold);
+    color: var(--bg-dark);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-right: 0.5rem;
 }
 
 /* List View */
@@ -1622,6 +1701,54 @@ body {
 
     .donations-container {
         grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+
+    /* Donor Card Mobile Fixes */
+    .donation-card {
+        padding: 1rem;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .donation-card .donor-name {
+        font-size: 1.1rem;
+        word-break: break-word;
+    }
+
+    .donation-card .amount {
+        font-size: 1.5rem;
+    }
+
+    .donation-card .amount-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .donation-history {
+        max-height: 100px;
+        font-size: 0.8rem;
+    }
+
+    .history-item {
+        font-size: 0.75rem;
+        padding: 0.2rem 0;
+    }
+
+    .donation-card .meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .donation-card .category-tag {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+    }
+
+    .donation-card .notes {
+        font-size: 0.8rem;
+        padding: 0.5rem;
     }
 
     .admin-tabs {
@@ -1642,6 +1769,8 @@ body {
 
     .modal-content {
         padding: var(--spacing-lg);
+        max-height: 80vh;
+        overflow-y: auto;
     }
 
     .diya,
@@ -1698,7 +1827,67 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-gold);
+    background: var(--accent-gold);
+}
+
+/* =====================================================
+   PRINT STYLES (Mobile-Friendly PDF Export)
+   ===================================================== */
+@media print {
+
+    /* Hide unnecessary elements */
+    .bg-animations,
+    .admin-btn,
+    .controls-bar,
+    .compact-footer,
+    #splashScreen,
+    .modal,
+    .toast {
+        display: none !important;
+    }
+
+    /* Optimize for print */
+    body {
+        background: white;
+        color: black;
+    }
+
+    .main-content {
+        padding: 0;
+        max-width: 100%;
+    }
+
+    .donation-card {
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
+        background: white;
+        color: black;
+        box-shadow: none;
+        margin-bottom: 1rem;
+    }
+
+    .donor-name,
+    .amount,
+    .category-tag {
+        color: black !important;
+    }
+
+    .stat-card {
+        border: 1px solid #ccc;
+        background: white;
+        color: black;
+    }
+
+    /* Ensure good contrast */
+    * {
+        color: black !important;
+        background: white !important;
+    }
+
+    .donation-card {
+        border: 2px solid black !important;
+        background: white !important;
+    }
 }
 
 /* =====================================================
