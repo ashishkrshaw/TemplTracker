@@ -1106,7 +1106,7 @@ input[type="file"]::file-selector-button {
     border-radius: var(--radius-lg);
     padding: var(--spacing-xl);
     width: 100%;
-    max-width: 500px;
+    max-width: 600px;
     max-height: 90vh;
     overflow-y: auto;
     animation: modalSlideIn 0.3s ease;
@@ -1975,4 +1975,42 @@ input[type="file"]::file-selector-button {
         width: 100%;
         justify-content: center;
     }
+}
+
+/* =====================================================
+   PERFORMANCE OPTIMIZATIONS
+   ===================================================== */
+.donation-card,
+.category-item,
+.modal-content,
+.btn,
+.diya {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    /* Force GPU acceleration */
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Reduce blur intensity for smoother scrolling */
+.glass-card,
+.top-banner,
+.compact-footer,
+.modal-content,
+.admin-panel,
+.settings-section .setting-item {
+    backdrop-filter: blur(5px) !important;
+    -webkit-backdrop-filter: blur(5px) !important;
+}
+
+/* Optimize shadows during hover to prevent repaints */
+.donation-card:hover,
+.btn:hover {
+    will-change: transform, box-shadow;
+}
+
+/* Ensure smooth modal scrolling */
+.modal-content {
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }

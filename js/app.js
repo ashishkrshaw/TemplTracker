@@ -110,6 +110,7 @@ async function initApp() {
     populateCategoryFilter();
     setupEventListeners();
     applyViewMode();
+    populateCSVCategories(); // Ensure CSV categories are populated
     showLoading(false);
 }
 
@@ -966,8 +967,13 @@ function setupEventListeners() {
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
 
     // Search input
+    // Search input (Debounced)
+    let searchTimeout;
     document.getElementById('searchInput').addEventListener('input', function () {
-        renderPublicView(this.value, document.getElementById('categoryFilter').value);
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            renderPublicView(this.value, document.getElementById('categoryFilter').value);
+        }, 300);
     });
 
     // Category filter
@@ -1273,9 +1279,9 @@ if (document.getElementById('exportBtn')) {
 // Populate category dropdown in CSV import modal
 function populateCSVCategories() {
     const select = document.getElementById('csvCategoryId');
-    if (select) {
-        select.innerHTML = '<option value="">Choose category...</option>';
-        allCategories.forEach(cat => {
+    if (select && categoriesCache) {
+        select.innerHTML = '<option value="">Choose category (टोला)...</option>';
+        categoriesCache.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat._id;
             option.textContent = cat.name;

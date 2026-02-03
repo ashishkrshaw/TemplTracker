@@ -766,6 +766,11 @@ app.put('/api/settings/showDates', async (req, res) => {
 
 // ==================== SERVE FRONTEND ====================
 
+// Serve Admin Route
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
