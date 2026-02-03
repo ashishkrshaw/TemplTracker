@@ -1316,32 +1316,43 @@ document.getElementById('csvFile')?.addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (file) {
         const text = await file.text();
-        const hasHeaders = document.getElementById('csvHasHeaders').checked;
-        const data = parseCSV(text, hasHeaders);
-
-        // Show preview
-        const preview = document.getElementById('csvPreview');
-        const previewContent = document.getElementById('csvPreviewContent');
-
-        if (data.length > 0) {
-            preview.style.display = 'block';
-            previewContent.innerHTML = `
-                <p>Found ${data.length} rows</p>
-                <table style="width: 100%; font-size: 0.9rem;">
-                    <tr><th>Name</th><th>Amount</th><th>Date</th></tr>
-                    ${data.slice(0, 5).map(row => `
-                        <tr>
-                            <td>${row.name}</td>
-                            <td>${row.rashi}</td>
-                            <td>${row.dinank}</td>
-                        </tr>
-                    `).join('')}
-                    ${data.length > 5 ? '<tr><td colspan="3">... and ' + (data.length - 5) + ' more</td></tr>' : ''}
-                </table>
-            `;
-        }
+        updateCSVPreview(text);
     }
 });
+
+// Handle CSV Text Paste
+document.getElementById('csvText')?.addEventListener('input', (e) => {
+    const text = e.target.value;
+    updateCSVPreview(text);
+});
+
+function updateCSVPreview(text) {
+    const hasHeaders = document.getElementById('csvHasHeaders').checked;
+    const data = parseCSV(text, hasHeaders);
+
+    const preview = document.getElementById('csvPreview');
+    const previewContent = document.getElementById('csvPreviewContent');
+
+    if (data.length > 0) {
+        preview.style.display = 'block';
+        previewContent.innerHTML = `
+            <p>Found ${data.length} rows</p>
+            <table style="width: 100%; font-size: 0.9rem;">
+                <tr><th>Name</th><th>Amount</th><th>Date</th></tr>
+                ${data.slice(0, 5).map(row => `
+                    <tr>
+                        <td>${row.name}</td>
+                        <td>${row.rashi}</td>
+                        <td>${row.dinank}</td>
+                    </tr>
+                `).join('')}
+                ${data.length > 5 ? '<tr><td colspan="3">... and ' + (data.length - 5) + ' more</td></tr>' : ''}
+            </table>
+        `;
+    } else {
+        preview.style.display = 'none';
+    }
+}
 
 // Handle CSV import form submission
 document.getElementById('csvImportForm')?.addEventListener('submit', async (e) => {
@@ -1349,15 +1360,21 @@ document.getElementById('csvImportForm')?.addEventListener('submit', async (e) =
 
     const categoryId = document.getElementById('csvCategoryId').value;
     const file = document.getElementById('csvFile').files[0];
+    const textInput = document.getElementById('csvText').value;
     const hasHeaders = document.getElementById('csvHasHeaders').checked;
 
-    if (!file || !categoryId) {
-        showToast('Please select both category and CSV file', 'error');
+    if (!categoryId) {
+        showToast('Please select a category', 'error');
+        return;
+    }
+
+    if (!file && !textInput.trim()) {
+        showToast('Please upload a file or paste CSV text', 'error');
         return;
     }
 
     try {
-        const text = await file.text();
+        const text = file ? await file.text() : textInput;
         const data = parseCSV(text, hasHeaders);
 
         if (data.length === 0) {
@@ -1370,7 +1387,7 @@ document.getElementById('csvImportForm')?.addEventListener('submit', async (e) =
         let successCount = 0;
         let errorCount = 0;
 
-        // Import donations one by one or in batches
+        // Import donations
         for (const row of data) {
             try {
                 await apiPost('/api/donations', {
@@ -1394,10 +1411,10 @@ document.getElementById('csvImportForm')?.addEventListener('submit', async (e) =
         showToast(`Import complete! Success: ${successCount}, Errors: ${errorCount}`, 'success');
 
         // Refresh data
-        await loadDonations();
+        await loadAllData();
         renderPublicView();
         if (currentUser) {
-            renderDonationsTable();
+            renderAdminDonations();
         }
     } catch (error) {
         showToast('Error importing CSV: ' + error.message, 'error');
