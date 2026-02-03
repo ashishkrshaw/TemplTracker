@@ -7,6 +7,9 @@ node_modules/
 # Testing coverage
 coverage/
 
+# Separate migration project
+client/
+
 # OS generated files
 Thumbs.db
 .DS_Store

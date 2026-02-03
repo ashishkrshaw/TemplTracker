@@ -959,8 +959,8 @@ function showToast(message, type = 'success') {
 // ==================== EVENT LISTENERS ====================
 
 function setupEventListeners() {
-    // Admin toggle button
-    document.getElementById('adminToggleBtn').addEventListener('click', openLoginModal);
+    // Admin toggle button (Handled by adminTrigger)
+    // document.getElementById('adminToggleBtn')?.addEventListener('click', openLoginModal);
 
     // Login form
     document.getElementById('loginForm').addEventListener('submit', handleLogin);
@@ -1743,7 +1743,18 @@ window.deletePost = async function (id) {
 
 // Initialize additional listeners
 document.addEventListener('DOMContentLoaded', () => {
+    initApp();
     setupAdminTrigger();
     handleSplash();
     loadCommunitySettings();
 });
+
+// Navigation helper
+window.scrollToCommunity = function () {
+    const section = document.getElementById('communitySection');
+    if (section && section.style.display !== 'none') {
+        section.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        showToast('Community feature is currently disabled.', 'info');
+    }
+}

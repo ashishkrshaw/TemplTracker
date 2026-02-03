@@ -168,6 +168,9 @@
                     <button class="btn btn-outline download-btn" onclick="downloadPDF()">
                         📄 Download PDF
                     </button>
+                    <button class="btn btn-primary" onclick="scrollToCommunity()">
+                        💬 Community
+                    </button>
                 </div>
 
                 <!-- Donations Container -->
@@ -432,6 +435,14 @@
                             <button class="btn btn-outline" onclick="openChangePasswordModal()">Change Password</button>
                         </div>
                         <div class="setting-item">
+                            <label>💬 Community Feature</label>
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="communityToggle" onchange="toggleCommunity()"
+                                    style="width: 18px; height: 18px;">
+                                <span style="font-size: 0.9rem;">Enable Public Community Board</span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
                             <label>📅 Show Dates on Cards</label>
                             <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                                 <input type="checkbox" id="showDatesToggle" onchange="toggleShowDates()" checked
@@ -601,10 +612,16 @@
                             <small class="form-hint">All imported donations will be added to this category</small>
                         </div>
                         <div class="form-group">
-                            <label>CSV File *</label>
-                            <input type="file" id="csvFile" accept=".csv" required>
-                            <small class="form-hint">CSV columns: "name" (donor), "rashi" (amount), "dinank"
-                                (date)</small>
+                            <label>Upload CSV File</label>
+                            <input type="file" id="csvFile" accept=".csv">
+                        </div>
+                        <div style="text-align: center; color: var(--text-muted); margin: 0.5rem 0; font-size: 0.9rem;">
+                            — OR —</div>
+                        <div class="form-group">
+                            <label>Paste Data (CSV Format)</label>
+                            <textarea id="csvText" placeholder="Format: Name, Amount, Date" rows="5"
+                                style="width: 100%; background: var(--glass-bg); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem;"></textarea>
+                            <small class="form-hint">Columns: "name", "rashi" (amount), "dinank" (date)</small>
                         </div>
                         <div class="form-group">
                             <label>
