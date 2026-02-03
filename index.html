@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🙏 Temple Building Donation Tracker</title>
+    <meta name="description"
+        content="Track and view donations for temple building construction. See donor names, amounts, and dates.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <!-- Splash Screen -->
+    <div id="splashScreen">
+        <div class="splash-content">
+            <img src="images/modern_om_splash.png" alt="Om" class="splash-logo">
+            <div class="splash-text">Temple Tracker</div>
+            <div class="splash-subtext">Optimized for Devotion</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- Animated Background -->
+        <div class="bg-animations">
+            <div class="floating-particles"></div>
+            <div class="om-symbol">ॐ</div>
+            <div class="hanuman-container">
+                <img src="assets/hanuman.png" alt="Hanuman Ji" class="hanuman-image">
+            </div>
+        </div>
+
+        <!-- Top Banner -->
+        <div class="top-banner">
+            <div class="banner-content">
+                <span>⚜️ जय श्री राम ⚜️</span>
+            </div>
+        </div>
+
+        <div class="app-container">
+            <!-- Header -->
+            <header class="header">
+                <div class="diya diya-1" id="adminTrigger" title="Double click for Admin">🪔</div>
+
+                <div class="temple-banner">
+                    <div class="temple-icon">🛕</div>
+                    <h1>श्री मंदिर निर्माण दान</h1>
+                    <p class="subtitle">Building Faith, Brick by Brick</p>
+                </div>
+
+                <div class="diya diya-2">🪔</div>
+            </header>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Stats Bar -->
+                <div class="stats-bar" id="statsBar">
+                    <div class="stat-card">
+                        <span class="stat-icon">👥</span>
+                        <div class="stat-info">
+                            <span class="stat-value" id="totalDonors">0</span>
+                            <span class="stat-label">Total Donors</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">💰</span>
+                        <div class="stat-info">
+                            <span class="stat-value" id="totalAmount">₹0</span>
+                            <span class="stat-label">Total Collection</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-icon">📁</span>
+                        <div class="stat-info">
+                            <span class="stat-value" id="totalCategories">0</span>
+                            <span class="stat-label">Categories (Tola)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search & Filter Bar -->
+                <div class="controls-bar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="searchInput" placeholder="Search donor name (Hindi/English)...">
+                    </div>
+                    <div class="filter-box">
+                        <!-- Status Filter -->
+                        <select id="paymentStatusFilter" style="margin-right: 0.5rem;">
+                            <option value="">Status: All</option>
+                            <option value="paid">Paid (Jo De Diya)</option>
+                            <option value="pledged">Pledged (Jo Nahi Diya)</option>
+                        </select>
+                        <!-- Category Filter -->
+                        <select id="categoryFilter">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-outline download-btn" onclick="downloadPDF()">
+                        📄 Download PDF
+                    </button>
+                </div>
+
+                <!-- Donations Container -->
+                <div class="donations-container" id="donationsContainer">
+                    <!-- Donations will be rendered here -->
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <span class="empty-icon">📭</span>
+                    <h3>No donations yet</h3>
+                    <p>Donations will appear here once added by admin</p>
+                </div>
+            </main>
+
+            <!-- Admin Login Modal -->
+            <div class="modal" id="loginModal">
+                <div class="modal-content glass-card">
+                    <div class="modal-header">
+                        <h2>🔐 Admin Login</h2>
+                        <button class="close-btn" onclick="closeModal('loginModal')">&times;</button>
+                    </div>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="loginUsername" placeholder="Enter username" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="loginPassword" placeholder="Enter password" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Security Check</label>
+                            <div class="captcha-container">
+                                <span id="captchaLabel" class="captcha-label">3 + 5 = ?</span>
+                                <input type="number" id="captchaInput" placeholder="?" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                        <!-- Hint Removed for security -->
+                    </form>
+                </div>
+            </div>
+
+            <!-- Admin Panel -->
+            <div class="admin-panel" id="adminPanel">
+                <div class="admin-header">
+                    <h2>⚙️ Admin Dashboard</h2>
+                    <div class="admin-actions">
+                        <span id="currentUserDisplay"></span>
+                        <button class="btn btn-outline" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+
+                <!-- Admin Tabs -->
+                <div class="admin-tabs">
+                    <button class="tab-btn active" data-tab="approvals">✅ Approvals <span class="badge"
+                            id="pendingCountBadge">0</span></button>
+                    <button class="tab-btn" data-tab="donations">📝 Donations</button>
+                    <button class="tab-btn" data-tab="categories">📁 Categories</button>
+                    <button class="tab-btn" data-tab="subadmins">👥 Sub-Admins</button>
+                    <button class="tab-btn" data-tab="logs">📋 Logs</button>
+                    <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
+                </div>
+
+                <!-- Approvals Tab -->
+                <div class="tab-content active" id="approvalsTab">
+                    <div class="tab-header">
+                        <h3>Pending Approvals</h3>
+                        <span style="color: var(--warning)">⚠️ Requires Review</span>
+                    </div>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Donor</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="approvalsTableBody">
+                            </tbody>
+                        </table>
+                        <div id="noApprovalsMsg" class="empty-message">No pending approvals</div>
+                    </div>
+                </div>
+
+                <!-- Donations Tab -->
+                <div class="tab-content" id="donationsTab">
+                    <div class="tab-header">
+                        <h3>Manage Donations</h3>
+                        <button class="btn btn-primary" onclick="openAddDonationModal()" id="addDonationBtn">+ Add
+                            Donation</button>
+                    </div>
+                    <div class="admin-table-container">
+                        <table class="admin-table" id="donationsTable">
+                            <thead>
+                                <tr>
+                                    <th>Donor Name</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="donationsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Categories Tab -->
+                <div class="tab-content" id="categoriesTab">
+                    <div class="tab-header">
+                        <h3>Manage Categories (Tola)</h3>
+                        <button class="btn btn-primary" onclick="openAddCategoryModal()" id="addCategoryBtn">+ Add
+                            Category</button>
+                    </div>
+                    <div class="categories-list" id="categoriesList">
+                        <!-- Categories with drag handles will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Sub-Admins Tab -->
+                <div class="tab-content" id="subadminsTab">
+                    <div class="tab-header">
+                        <h3>Manage Sub-Admins</h3>
+                        <button class="btn btn-primary" onclick="openAddSubAdminModal()" id="addSubAdminBtn">+ Add
+                            Sub-Admin</button>
+                    </div>
+                    <div class="subadmins-list" id="subadminsList">
+                        <!-- Sub-admins will be rendered here -->
+                    </div>
+                </div>
+
+                <!-- Activity Logs Tab -->
+                <div class="tab-content" id="logsTab">
+                    <div class="tab-header">
+                        <h3>📋 Activity Logs</h3>
+                        <span style="color: var(--success); font-size: 0.9rem;">🔒 Non-Deletable Records</span>
+                    </div>
+                    <div class="logs-filter" style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <select id="logActionFilter" onchange="filterLogs()"
+                            style="padding: 0.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 8px;">
+                            <option value="">All Actions</option>
+                            <option value="LOGIN">Login</option>
+                            <option value="ADD">Add</option>
+                            <option value="EDIT">Edit</option>
+                            <option value="DELETE">Delete</option>
+                        </select>
+                        <select id="logEntityFilter" onchange="filterLogs()"
+                            style="padding: 0.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 8px;">
+                            <option value="">All Types</option>
+                            <option value="DONATION">Donations</option>
+                            <option value="CATEGORY">Categories</option>
+                            <option value="SUBADMIN">Sub-Admins</option>
+                            <option value="AUTH">Authentication</option>
+                        </select>
+                    </div>
+                    <div class="admin-table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>User</th>
+                                    <th>Action</th>
+                                    <th>Type</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="logs-pagination" id="logsPagination"
+                        style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem;"></div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div class="tab-content" id="settingsTab">
+                    <div class="settings-section">
+                        <h3>Display Settings</h3>
+                        <div class="setting-item">
+                            <label>Public View Layout</label>
+                            <div class="toggle-group">
+                                <button class="toggle-btn active" data-view="cards" onclick="setViewMode('cards')">🃏
+                                    Cards</button>
+                                <button class="toggle-btn" data-view="list" onclick="setViewMode('list')">📋
+                                    List</button>
+                            </div>
+                        </div>
+                        <div class="setting-item">
+                            <label>Change Admin Password</label>
+                            <button class="btn btn-outline" onclick="openChangePasswordModal()">Change Password</button>
+                        </div>
+                        <div class="setting-item">
+                            <label>Export Data</label>
+                            <button class="btn btn-outline" onclick="exportData()">📥 Export JSON</button>
+                        </div>
+                        <div class="setting-item">
+                            <label>Import Data</label>
+                            <input type="file" id="importFile" accept=".json" onchange="importData(event)"
+                                style="display:none">
+                            <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📤
+                                Import
+                                JSON</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add/Edit Donation Modal -->
+            <div class="modal" id="donationModal">
+                <div class="modal-content glass-card">
+                    <div class="modal-header">
+                        <h2 id="donationModalTitle">Add Donation</h2>
+                        <button class="close-btn" onclick="closeModal('donationModal')">&times;</button>
+                    </div>
+                    <form id="donationForm">
+                        <input type="hidden" id="donationId">
+                        <div class="form-group">
+                            <label>Donor Name *</label>
+                            <input type="text" id="donorName" placeholder="Enter donor name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Amount (₹) *</label>
+                            <input type="number" id="donationAmount" placeholder="Enter amount" required min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="donationDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Category (Tola) *</label>
+                            <select id="donationCategory" required>
+                                <option value="">Select category</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Notes (Optional)</label>
+                            <textarea id="donationNotes" placeholder="Any additional notes..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Donation</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add/Edit Category Modal -->
+            <div class="modal" id="categoryModal">
+                <div class="modal-content glass-card">
+                    <div class="modal-header">
+                        <h2 id="categoryModalTitle">Add Category</h2>
+                        <button class="close-btn" onclick="closeModal('categoryModal')">&times;</button>
+                    </div>
+                    <form id="categoryForm">
+                        <input type="hidden" id="categoryId">
+                        <div class="form-group">
+                            <label>Category Name (Tola) *</label>
+                            <input type="text" id="categoryName" placeholder="e.g., Ram Nagar Tola" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Category</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Add/Edit Sub-Admin Modal -->
+            <div class="modal" id="subAdminModal">
+                <div class="modal-content glass-card">
+                    <div class="modal-header">
+                        <h2 id="subAdminModalTitle">Add Sub-Admin</h2>
+                        <button class="close-btn" onclick="closeModal('subAdminModal')">&times;</button>
+                    </div>
+                    <form id="subAdminForm">
+                        <input type="hidden" id="subAdminId">
+                        <div class="form-group">
+                            <label>Username *</label>
+                            <input type="text" id="subAdminUsername" placeholder="Enter username" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password *</label>
+                            <input type="password" id="subAdminPassword" placeholder="Enter password">
+                            <small class="form-hint">Leave blank to keep existing password (when editing)</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Permissions</label>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="permAddDonation" checked>
+                                    <span>Can Add Donations</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="permEditDonation">
+                                    <span>Can Edit Donations</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="permDeleteDonation">
+                                    <span>Can Delete Donations</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="permManageCategory">
+                                    <span>Can Manage Categories</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Assigned Categories</label>
+                            <div class="checkbox-group" id="assignedCategoriesGroup">
+                                <!-- Will be populated dynamically -->
+                            </div>
+                            <small class="form-hint">Leave all unchecked to allow all categories</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Sub-Admin</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password Modal -->
+            <div class="modal" id="changePasswordModal">
+                <div class="modal-content glass-card">
+                    <div class="modal-header">
+                        <h2>Change Password</h2>
+                        <button class="close-btn" onclick="closeModal('changePasswordModal')">&times;</button>
+                    </div>
+                    <form id="changePasswordForm">
+                        <div class="form-group">
+                            <label>Current Password *</label>
+                            <input type="password" id="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>New Password *</label>
+                            <input type="password" id="newPassword" required minlength="4">
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password *</label>
+                            <input type="password" id="confirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Password</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Toast Notification -->
+            <div class="toast" id="toast">
+                <span class="toast-icon"></span>
+                <span class="toast-message"></span>
+            </div>
+
+            <!-- Footer (Compact Mobile Friendly) -->
+            <footer class="compact-footer">
+                <div class="footer-content">
+                    <p>🙏 Crafted with devotion by Ashish</p>
+                    <div class="footer-links">
+                        <span>© 2026 Temple Tracker</span>
+                        <span class="separator">•</span>
+                        <span>Version 1.0</span>
+                    </div>
+                </div>
+            </footer>
+
+            <script src="js/app.js"></script>
+</body>
+
+</html>
