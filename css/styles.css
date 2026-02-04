@@ -59,10 +59,11 @@
     --radius-full: 9999px;
 
     /* Shadows */
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
-    --shadow-glow: 0 0 40px rgba(255, 193, 7, 0.15);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+    /* Reduced shadow spread */
+    --shadow-glow: 0 0 15px rgba(255, 107, 53, 0.2);
 
     /* Transitions */
     --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -81,7 +82,6 @@ body.admin-mode .header,
 body.admin-mode .stats-bar,
 body.admin-mode .controls-bar,
 body.admin-mode .donations-container,
-body.admin-mode .compact-footer,
 body.admin-mode .bg-animations {
     display: none !important;
 }
@@ -106,47 +106,26 @@ html {
 
 body {
     font-family: var(--font-body);
-    background: var(--bg-gradient);
+    background: #0a0505;
+    /* Solid dark background for best performance */
     color: var(--text-primary);
     min-height: 100vh;
-    overflow-x: hidden;
+    overflow-y: auto;
     line-height: 1.6;
-    position: relative;
 }
 
-/* Sacred Background Pattern */
-body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
     width: 100%;
-    height: 100%;
-    background-image:
-        radial-gradient(circle at 20% 50%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(255, 215, 0, 0.02) 0%, transparent 50%),
-        radial-gradient(circle at 40% 20%, rgba(139, 21, 56, 0.02) 0%, transparent 50%);
-    z-index: -2;
-    animation: sacredPulse 15s ease-in-out infinite;
 }
 
-/* Divine Hanuman Background Watermark */
+/* Background elements removed for performance optimization */
+.bg-animations,
+body::before,
 body::after {
-    content: '';
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 80vh;
-    height: 80vh;
-    background: url('../assets/hanuman_divine.png') no-repeat center center;
-    background-size: contain;
-    opacity: 0.03;
-    /* Subtle watermark */
-    z-index: -3;
-    pointer-events: none;
-    filter: sepia(0.2) drop-shadow(0 0 20px rgba(255, 107, 53, 0.1));
-    animation: divineFloat 20s ease-in-out infinite;
+    display: none !important;
 }
 
 @keyframes divineFloat {
@@ -157,7 +136,7 @@ body::after {
     }
 
     50% {
-        transform: translate(-50%, -50%) scale(1.05);
+        transform: translate(-50%, -50%) scale(1.02);
     }
 }
 
@@ -165,11 +144,11 @@ body::after {
 
     0%,
     100% {
-        opacity: 0.4;
+        opacity: 0.1;
     }
 
     50% {
-        opacity: 0.7;
+        opacity: 0.2;
     }
 }
 
@@ -228,40 +207,296 @@ body::after {
     }
 
     50% {
-        text-shadow: 0 0 20px rgba(255, 193, 7, 0.8), 0 0 10px rgba(255, 107, 53, 0.5);
+        /* Better performance on mobile */
+        text-shadow: none;
+        filter: none;
     }
 }
 
 /* =====================================================
-   COMPACT FOOTER (Mobile Friendly)
+   TRADITIONAL FOOTER
    ===================================================== */
-.compact-footer {
-    border-top: 1px solid rgba(255, 193, 7, 0.1);
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(10px);
-    padding: 1rem 0;
-    margin-top: auto;
-    width: 100%;
-    z-index: 10;
+.footer {
+    border-top: 2px solid rgba(255, 193, 7, 0.2);
+    background: #0a0505;
+    padding: 3rem 1rem 1.5rem;
+    margin-top: 4rem;
+    position: relative;
+    z-index: 1000;
+    /* Boosted for definitive visibility */
+    clear: both;
+    display: block !important;
+    /* Force visibility */
 }
 
-.footer-content {
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* =====================================================
+   COMMUNITY VIEW OVERLAY (Full Screen)
+   ===================================================== */
+.community-view-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 5, 5, 0.98);
+    backdrop-filter: blur(15px);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+}
+
+.community-content-container {
+    width: 100%;
+    max-width: 800px;
+    position: relative;
+}
+
+.community-header-sticky {
+    position: sticky;
+    top: -2rem;
+    background: rgba(10, 5, 5, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem 0;
+    margin-bottom: 2rem;
+    z-index: 10;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.community-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.community-title-row h2 {
+    font-family: var(--font-hindi);
+    color: var(--primary-gold);
+    font-size: 2rem;
+}
+
+.close-community-btn {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 2.5rem;
+    cursor: pointer;
+    line-height: 1;
+    transition: var(--transition-normal);
+}
+
+.close-community-btn:hover {
+    color: var(--primary-saffron);
+    transform: rotate(90deg);
+}
+
+.community-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.community-rules-banner {
+    background: rgba(255, 107, 53, 0.1);
+    color: var(--primary-saffron);
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    border: 1px solid rgba(255, 107, 53, 0.2);
+}
+
+/* Post Creation Card Styles */
+.post-creation-card {
+    padding: 2rem;
+    margin-bottom: 3rem;
+}
+
+.post-creation-card textarea {
+    width: 100%;
+    min-height: 120px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    padding: 1rem;
+    font-size: 1.1rem;
+    resize: vertical;
+    margin-bottom: 1.5rem;
+}
+
+.photo-upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed var(--glass-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-normal);
+    color: var(--text-secondary);
+}
+
+.photo-upload-label:hover {
+    background: rgba(255, 215, 0, 0.05);
+    border-color: var(--primary-gold);
+    color: var(--primary-gold);
+}
+
+.remove-img-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(255, 81, 0, 0.8);
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.post-form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+}
+
+/* Post Stream Styles */
+.posts-stream {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.8rem;
+    gap: 1.5rem;
+    padding-bottom: 5rem;
+}
+
+.community-post {
+    padding: 1.5rem;
+}
+
+.post-header-meta {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
     color: var(--text-muted);
 }
 
-.footer-links {
+.anon-icon {
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+}
+
+.anon-label {
+    color: var(--primary-gold);
+    font-weight: 600;
+}
+
+.post-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+}
+
+.post-image-wrap img {
+    width: 100%;
+    border-radius: var(--radius-md);
+    cursor: zoom-in;
+    transition: transform 0.3s;
+}
+
+.post-image-wrap img:hover {
+    transform: scale(1.01);
+}
+
+.reply-quick-form {
     display: flex;
     gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.reply-quick-form input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 1rem;
+    color: var(--text-primary);
+}
+
+.reply-quick-form button {
+    background: var(--primary-gold);
+    color: black;
+    border: none;
+    padding: 0 1rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+}
+
+.footer-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer-brand h2 {
+    color: var(--primary-gold);
+    margin-bottom: 0.5rem;
+    font-size: 1.5rem;
+}
+
+.footer-brand p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.footer-devotion p {
+    font-style: italic;
+    color: var(--primary-saffron);
+}
+
+.footer-bottom {
+    padding-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.footer-meta {
+    display: flex;
+    gap: 1rem;
     align-items: center;
 }
 
-.separator {
+.dot {
     color: var(--primary-gold);
+}
+
+@media (max-width: 768px) {
+    .footer-main {
+        flex-direction: column;
+        text-align: center;
+        gap: 1.5rem;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
 }
 
 /* =====================================================
@@ -463,8 +698,11 @@ body::after {
     font-size: 2rem;
     filter: drop-shadow(0 0 15px var(--primary-saffron));
     animation: flicker 4s infinite alternate;
-    cursor: default;
+    cursor: pointer;
     transition: transform 0.3s ease;
+    z-index: 9999;
+    position: relative;
+    pointer-events: auto;
 }
 
 .diya-1:hover {
@@ -709,6 +947,10 @@ body::after {
     max-width: 1400px;
     margin: 0 auto;
     padding: var(--spacing-xl);
+    flex: 1;
+    /* Key fix: allows content to grow and push footer down */
+    padding-bottom: 100px;
+    /* Extra space before footer */
 }
 
 /* Stats Bar */
@@ -1681,22 +1923,32 @@ input[type="file"]::file-selector-button {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    /* Fallback */
     height: 100vh;
+    height: 100dvh;
+    /* Dynamic viewport height for mobile */
+    background: #1a0a0a;
+    /* Solid background first for performance */
     background: var(--bg-gradient);
-    z-index: 9999;
+    z-index: 99999;
+    /* Highest z-index */
     overflow-y: auto;
-    padding: var(--spacing-xl);
-    padding-bottom: 100px;
-    /* Space for footer/scroll */
+    padding: var(--spacing-lg);
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scroll on iOS */
+    padding-bottom: 80px;
 }
 
 .admin-panel.active {
     display: block;
-    animation: slideIn 0.3s ease;
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideIn {
+@keyframes slideUp {
     from {
         transform: translateY(100%);
         opacity: 0;
@@ -2490,54 +2742,7 @@ input[type="file"]::file-selector-button {
     box-shadow: var(--shadow-glow);
 }
 
-/* =====================================================
-   FOOTER
-   ===================================================== */
-.footer {
-    position: relative;
-    z-index: 10;
-    margin-top: var(--spacing-2xl);
-    padding: var(--spacing-xl) var(--spacing-lg);
-    background: linear-gradient(0deg, rgba(139, 21, 56, 0.3) 0%, transparent 100%);
-    border-top: 1px solid var(--card-border);
-    text-align: center;
-}
 
-.footer-content {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-md);
-    flex-wrap: wrap;
-}
-
-.footer-icon {
-    font-size: 1.5rem;
-    animation: footerPulse 2s ease-in-out infinite;
-}
-
-.footer-content p {
-    color: var(--text-secondary);
-    font-size: 1rem;
-}
-
-.footer-content strong {
-    color: var(--accent-gold);
-}
-
-@keyframes footerPulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.8;
-    }
-
-    50% {
-        transform: scale(1.1);
-        opacity: 1;
-    }
-}
 
 @media (max-width: 768px) {
     .footer-content {

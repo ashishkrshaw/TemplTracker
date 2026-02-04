@@ -1647,6 +1647,10 @@ function setupAdminTrigger() {
     }
 }
 
+function openLoginModal() {
+    openModal('loginModal');
+}
+
 // Make functions global
 window.downloadPDF = downloadPDF;
 window.approveDonation = approveDonation;
@@ -1666,6 +1670,64 @@ async function loadCommunityPosts() {
     }
 }
 
+// Open Community View
+window.openCommunityView = function () {
+    const view = document.getElementById('communityView');
+    if (view) {
+        view.style.display = 'flex';
+        document.body.style.overflow = 'hidden'; // Prevent main page scroll
+        loadCommunityPosts();
+    }
+}
+
+// Close Community View
+window.closeCommunityView = function () {
+    const view = document.getElementById('communityView');
+    if (view) {
+        view.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Restore main page scroll
+    }
+}
+
+// Redirect scrollToCommunity to open the view
+window.scrollToCommunity = function () {
+    openCommunityView();
+}
+
+// Preview Post Image
+window.previewPostImage = function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        showToast('Image too large. Max 2MB.', 'error');
+        event.target.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const container = document.getElementById('postImagePreviewContainer');
+        const img = document.getElementById('postImagePreview');
+        if (img) img.src = e.target.result;
+        if (container) container.style.display = 'block';
+        // Store base64 in dataset
+        document.getElementById('postImageInput').dataset.base64 = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// Clear Post Image
+window.clearPostImage = function () {
+    const input = document.getElementById('postImageInput');
+    const container = document.getElementById('postImagePreviewContainer');
+    if (input) {
+        input.value = '';
+        delete input.dataset.base64;
+    }
+    if (container) container.style.display = 'none';
+}
+
 // Render community posts
 function renderCommunityPosts(posts) {
     const container = document.getElementById('postsContainer');
@@ -1676,37 +1738,47 @@ function renderCommunityPosts(posts) {
     countEl.textContent = `${posts.length} posts`;
 
     if (posts.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No posts yet. Be the first to share!</p>';
+        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 4rem;">No posts yet. Be the first to share your devotion!</p>';
         return;
     }
 
     container.innerHTML = posts.map(post => `
-        <div class="community-post glass-card" style="padding: 1.25rem; margin-bottom: 1rem; border-radius: var(--radius-md);">
-            <div class="post-content" style="margin-bottom: 0.75rem; line-height: 1.6;">
-                ${post.content}
-            </div>
-            <div class="post-meta" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
-                📅 ${formatDate(post.createdAt)}
+        <div class="community-post glass-card" data-animate="fade-up">
+            <div class="post-header-meta">
+                <span class="anon-icon">👤</span>
+                <span class="anon-label">Anonymous User</span>
+                <span class="dot">•</span>
+                <span class="post-time">${formatDate(post.createdAt)}</span>
             </div>
             
-            ${post.replies.length > 0 ? `
-                <div class="post-replies" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
-                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">💬 ${post.replies.length} replies</div>
+            <div class="post-body">
+                <div class="post-text">${post.content}</div>
+                ${post.imageUrl ? `
+                    <div class="post-image-wrap">
+                        <img src="${post.imageUrl}" alt="Community Post" onclick="window.open('${post.imageUrl}', '_blank')">
+                    </div>
+                ` : ''}
+            </div>
+            
+            <div class="post-footer-actions">
+                <button class="action-btn reply-btn" onclick="toggleReplyForm('${post._id}')">
+                    💬 ${post.replies.length} Replies
+                </button>
+            </div>
+            
+            <div id="replySection-${post._id}" class="replies-container" style="display: none;">
+                <div class="replies-list" id="repliesList-${post._id}">
                     ${post.replies.map(reply => `
-                        <div class="reply-item" style="background: rgba(255, 255, 255, 0.02); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 0.5rem; border-left: 2px solid var(--primary-gold);">
-                            <div style="font-size: 0.9rem; margin-bottom: 0.25rem;">${reply.content}</div>
-                            <div style="font-size: 0.75rem; color: var(--text-muted);">📅 ${formatDate(reply.createdAt)}</div>
+                        <div class="reply-card">
+                            <div class="reply-text">${reply.content}</div>
+                            <div class="reply-meta">${formatDate(reply.createdAt)}</div>
                         </div>
                     `).join('')}
                 </div>
-            ` : ''}
-            
-            <div class="reply-form" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--glass-border);">
-                <form onsubmit="handleReplySubmit(event, '${post._id}')">
-                    <div style="display: flex; gap: 0.5rem;">
-                        <input type="text" placeholder="Add a reply..." maxlength="300" style="flex: 1; background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 0.5rem;" required>
-                        <button type="submit" class="btn btn-sm btn-primary">Reply</button>
-                    </div>
+                
+                <form class="reply-quick-form" onsubmit="handleReplySubmit(event, '${post._id}')">
+                    <input type="text" placeholder="Write a respectful reply..." maxlength="300" required>
+                    <button type="submit">Send</button>
                 </form>
             </div>
         </div>
@@ -1717,6 +1789,7 @@ function renderCommunityPosts(posts) {
 document.getElementById('communityPostForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const content = document.getElementById('postContent').value.trim();
+    const imageUrl = document.getElementById('postImageInput').dataset.base64 || '';
 
     if (!content) {
         showToast('Please enter some content', 'error');
@@ -1724,15 +1797,27 @@ document.getElementById('communityPostForm')?.addEventListener('submit', async (
     }
 
     try {
-        await apiPost('/api/community', { content });
+        await apiPost('/api/community', { content, imageUrl });
+
+        // Reset form
         document.getElementById('postContent').value = '';
+        clearPostImage();
         document.getElementById('charCount').textContent = '0/500';
+
         showToast('Post created successfully!', 'success');
         await loadCommunityPosts();
     } catch (error) {
         showToast(error.message || 'Failed to create post', 'error');
     }
 });
+
+// Toggle Reply Form
+window.toggleReplyForm = function (postId) {
+    const section = document.getElementById(`replySection-${postId}`);
+    if (section) {
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+    }
+}
 
 // Character counter
 document.getElementById('postContent')?.addEventListener('input', (e) => {
@@ -1764,9 +1849,10 @@ async function loadCommunitySettings() {
         const settings = await apiGet('/api/settings');
         communityEnabled = settings.communityEnabled || false;
 
-        const section = document.getElementById('communitySection');
-        if (section) {
-            section.style.display = communityEnabled ? 'block' : 'none';
+        // Find the main navigation button
+        const navBtn = document.getElementById('communityNavBtn');
+        if (navBtn) {
+            navBtn.style.display = communityEnabled ? 'inline-flex' : 'none';
         }
 
         const toggle = document.getElementById('communityToggle');
@@ -1785,25 +1871,25 @@ async function loadCommunitySettings() {
 // Toggle community feature
 window.toggleCommunity = async function () {
     const toggle = document.getElementById('communityToggle');
-    const enabled = toggle.checked;
+    const communityEnabled = toggle.checked;
 
     try {
-        await apiPut('/api/settings/community', { enabled });
-        communityEnabled = enabled;
+        const updatedSettings = await apiPut('/api/settings', { communityEnabled });
+        settingsCache = updatedSettings;
 
         const section = document.getElementById('communitySection');
         if (section) {
-            section.style.display = enabled ? 'block' : 'none';
+            section.style.display = communityEnabled ? 'block' : 'none';
         }
 
-        showToast(`Community ${enabled ? 'enabled' : 'disabled'}`, 'success');
+        showToast(`Community ${communityEnabled ? 'enabled' : 'disabled'}`, 'success');
 
-        if (enabled) {
+        if (communityEnabled) {
             await loadCommunityPosts();
         }
     } catch (error) {
         showToast('Failed to toggle community', 'error');
-        toggle.checked = !enabled;
+        toggle.checked = !communityEnabled;
     }
 };
 
@@ -1813,10 +1899,8 @@ window.toggleShowDates = async function () {
     const showDates = toggle.checked;
 
     try {
-        await apiPut('/api/settings/showDates', { showDates });
-
-        // Update cache
-        settingsCache.showDates = showDates;
+        const updatedSettings = await apiPut('/api/settings', { showDates });
+        settingsCache = updatedSettings;
 
         // Re-render public view
         renderPublicView();
@@ -1874,13 +1958,8 @@ window.deletePost = async function (id) {
     }
 };
 
-// Initialize additional listeners
-document.addEventListener('DOMContentLoaded', () => {
-    initApp();
-    setupAdminTrigger();
-    handleSplash();
-    loadCommunitySettings();
-});
+// Initialize additional listeners moved to end of file for consolidation
+
 
 
 // Navigation helper
@@ -1895,89 +1974,140 @@ window.scrollToCommunity = function () {
 
 // ==================== UPI PAYMENT FUNCTIONS ====================
 
+// Preview QR Upload in Admin
+function previewQrUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const preview = document.getElementById('qrUploadPreview');
+        const img = document.getElementById('qrPreviewImg');
+        if (img) img.src = e.target.result;
+        if (preview) preview.style.display = 'block';
+        // Temporarily store base64 in attribute for saving later
+        document.getElementById('upiQrInput').dataset.base64 = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+// Clear QR Upload
+function clearQrUpload() {
+    const preview = document.getElementById('qrUploadPreview');
+    const input = document.getElementById('upiQrInput');
+    if (preview) preview.style.display = 'none';
+    if (input) {
+        input.value = '';
+        delete input.dataset.base64;
+    }
+}
+
+// Copy to Clipboard Helper
+window.copyToClipboard = function (text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('UPI ID copied to clipboard!', 'success');
+    }).catch(err => {
+        console.error('Copy failed:', err);
+    });
+}
+
 function toggleUPIPayment() {
     const toggle = document.getElementById('upiEnabledToggle');
     const form = document.getElementById('upiSettingsForm');
-
-    if (toggle.checked) {
-        form.style.display = 'block';
-    } else {
-        form.style.display = 'none';
-        // Hide on public page
-        const section = document.getElementById('qrDonationSection');
-        if (section) section.style.display = 'none';
-
-        // Save disabled state
-        localStorage.setItem('upiEnabled', 'false');
-    }
+    if (form) form.style.display = toggle.checked ? 'block' : 'none';
 }
 
 async function saveUPISettings() {
     const upiId = document.getElementById('upiIdInput').value.trim();
-    const enabled = document.getElementById('upiEnabledToggle').checked;
+    const upiEnabled = document.getElementById('upiEnabledToggle').checked;
+    const upiQrImage = document.getElementById('upiQrInput').dataset.base64 || settingsCache.upiQrImage || '';
 
-    if (!upiId && enabled) {
-        showToast('Please enter UPI ID or Phone Number', 'error');
+    if (!upiId && upiEnabled && !upiQrImage) {
+        showToast('Please enter UPI ID or upload a QR image', 'error');
         return;
     }
 
-    // Save to localStorage (you can also save to MongoDB if needed)
-    localStorage.setItem('upiId', upiId);
-    localStorage.setItem('upiEnabled', enabled.toString());
+    try {
+        const updatedSettings = await apiPut('/api/settings', {
+            upiEnabled,
+            upiId,
+            upiQrImage
+        });
 
-    showToast('UPI settings saved successfully!', 'success');
-
-    // Update public view
-    loadUPIPayment();
+        settingsCache = updatedSettings;
+        showToast('UPI settings saved successfully!', 'success');
+        renderUPIDisplay();
+    } catch (error) {
+        showToast('Failed to save UPI settings', 'error');
+    }
 }
 
-function loadUPIPayment() {
-    const upiId = localStorage.getItem('upiId');
-    const enabled = localStorage.getItem('upiEnabled') === 'true';
+function renderUPIDisplay() {
+    if (!settingsCache) return;
+    const { upiEnabled, upiId, upiQrImage } = settingsCache;
     const section = document.getElementById('qrDonationSection');
 
     if (!section) return;
 
-    if (enabled && upiId) {
+    if (upiEnabled && (upiId || upiQrImage)) {
         section.style.display = 'block';
 
-        // Generate UPI payment link
-        const upiLink = upiId.includes('@')
-            ? `upi://pay?pa=${upiId}&pn=Temple Donation&cu=INR`
-            : `upi://pay?pa=${upiId}@paytm&pn=Temple Donation&cu=INR`;
+        const upiLink = upiId ? (upiId.includes('@')
+            ? `upi://pay?pa=${upiId}&pn=Temple%20Donation&cu=INR`
+            : `upi://pay?pa=${upiId}@paytm&pn=Temple%20Donation&cu=INR`) : '#';
 
-        // Display UPI ID as clickable link
-        const upiDisplay = document.getElementById('upiIdDisplay');
-        if (upiDisplay) {
-            upiDisplay.innerHTML = `<a href="${upiLink}" style="color: var(--primary-gold); text-decoration: none;">
-                📱 ${upiId}
-            </a>`;
+        const payLink = document.getElementById('upiPaymentLink');
+        if (payLink) {
+            payLink.href = upiLink;
+            payLink.style.display = upiId ? 'inline-flex' : 'none';
         }
 
-        // Generate QR Code using QR server API
-        const qrDisplay = document.getElementById('qrCodeDisplay');
-        if (qrDisplay) {
-            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
-            qrDisplay.innerHTML = `<img src="${qrCodeUrl}" alt="UPI QR Code" style="width: 200px; height: 200px; border-radius: 8px;">`;
+        const upiDisplay = document.getElementById('upiIdDisplay');
+        if (upiDisplay) {
+            upiDisplay.textContent = upiId || '';
+            upiDisplay.style.display = upiId ? 'block' : 'none';
+        }
+
+        const qrImgElement = document.getElementById('upiManualQr');
+        const qrGenContainer = document.getElementById('qrCodeDisplay');
+
+        if (upiQrImage) {
+            if (qrImgElement) {
+                qrImgElement.src = upiQrImage;
+                qrImgElement.style.display = 'block';
+                qrImgElement.style.margin = '0 auto';
+            }
+            if (qrGenContainer) qrGenContainer.style.display = 'none';
+        } else {
+            if (qrImgElement) qrImgElement.style.display = 'none';
+            if (qrGenContainer) qrGenContainer.style.display = 'none';
         }
     } else {
         section.style.display = 'none';
     }
 }
 
-// Load UPI settings in admin panel
 function loadUPISettings() {
-    const upiId = localStorage.getItem('upiId');
-    const enabled = localStorage.getItem('upiEnabled') === 'true';
+    if (!settingsCache) return;
+    const { upiEnabled, upiId, upiQrImage } = settingsCache;
 
     const toggle = document.getElementById('upiEnabledToggle');
     const input = document.getElementById('upiIdInput');
     const form = document.getElementById('upiSettingsForm');
+    const preview = document.getElementById('qrUploadPreview');
+    const previewImg = document.getElementById('qrPreviewImg');
 
-    if (toggle) toggle.checked = enabled;
-    if (input && upiId) input.value = upiId;
-    if (form && enabled) form.style.display = 'block';
+    if (toggle) toggle.checked = upiEnabled || false;
+    if (input) input.value = upiId || '';
+    if (form) form.style.display = upiEnabled ? 'block' : 'none';
+
+    if (upiQrImage && previewImg && preview) {
+        previewImg.src = upiQrImage;
+        preview.style.display = 'block';
+    }
 }
+
+
 
 // ==================== IMPROVED BILINGUAL SEARCH ====================
 
@@ -2047,13 +2177,23 @@ function setupImprovedSearch() {
 }
 
 // Initialize all new features
-document.addEventListener('DOMContentLoaded', () => {
-    initApp();
-    setupAdminTrigger();
-    handleSplash();
-    loadCommunitySettings();
-    loadUPIPayment(); // Load UPI payment on public page
-    setupImprovedSearch(); // Setup bilingual search
+document.addEventListener('DOMContentLoaded', async () => {
+    handleSplash(); // Unlock UI early
+
+    try {
+        await initApp();
+        setupAdminTrigger();
+        loadCommunitySettings();
+        renderUPIDisplay(); // Load UPI payment using settingsCache
+        setupImprovedSearch(); // Setup bilingual search
+
+        // Ensure community view is hidden on start
+        const communityView = document.getElementById('communityView');
+        if (communityView) communityView.style.display = 'none';
+    } catch (error) {
+        console.error('App initialization failed:', error);
+        showToast('Application initialization issue. Please refresh.', 'error');
+    }
 });
 
 // Load UPI settings when admin panel is shown

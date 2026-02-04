@@ -63,7 +63,10 @@ const settingsSchema = new mongoose.Schema({
     adminPassword: { type: String, required: true },
     viewMode: { type: String, enum: ['cards', 'list'], default: 'cards' },
     communityEnabled: { type: Boolean, default: false },
-    showDates: { type: Boolean, default: true }
+    showDates: { type: Boolean, default: true },
+    upiEnabled: { type: Boolean, default: false },
+    upiId: { type: String, default: '' },
+    upiQrImage: { type: String, default: '' } // Base64 string
 });
 
 // Activity Log Schema (NON-DELETABLE)
@@ -511,15 +514,25 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-// Update settings
+// Update settings (Generic)
 app.put('/api/settings', async (req, res) => {
     try {
-        const settings = await Settings.findOne();
-        if (req.body.viewMode) {
-            settings.viewMode = req.body.viewMode;
+        let settings = await Settings.findOne();
+        if (!settings) {
+            // Initialize settings if not found
+            settings = new Settings({ adminPassword: await bcrypt.hash('admin123', 10) });
         }
+
+        // Update only provided fields
+        const fields = ['viewMode', 'communityEnabled', 'showDates', 'upiEnabled', 'upiId', 'upiQrImage'];
+        fields.forEach(field => {
+            if (req.body[field] !== undefined) {
+                settings[field] = req.body[field];
+            }
+        });
+
         await settings.save();
-        res.json({ viewMode: settings.viewMode });
+        res.json(settings);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

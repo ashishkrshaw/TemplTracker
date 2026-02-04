@@ -84,7 +84,9 @@
         </div>
     </div>
 
-    <div class="main-content">
+    <!-- Main App Container -->
+    <div class="app-container">
+
         <!-- Animated Background -->
         <div class="bg-animations">
             <div class="floating-particles"></div>
@@ -94,127 +96,156 @@
             </div>
         </div>
 
-        <!-- Top Banner -->
-        <div class="top-banner">
-            <div class="banner-content">
-                <p class="subtitle">Building Faith, Brick by Brick</p>
+        <!-- Header & Banner -->
+        <header class="header">
+            <div class="top-banner">
+                <div class="banner-content">
+                    <p class="subtitle">Building Faith, Brick by Brick</p>
+                </div>
+                <!-- Admin Access Diya -->
+                <div class="diya diya-2" id="adminTrigger" title="Admin Login">🪔</div>
+            </div>
+        </header>
+
+        <!-- QR Code Donation Section -->
+        <div class="qr-donation-section" id="qrDonationSection" style="display: none;">
+            <div class="qr-card">
+                <h3>💝 Donate via UPI</h3>
+                <div id="qrCodeContainer" class="qr-code-container">
+                    <!-- Either IMG or QR gen will go here -->
+                    <img id="upiManualQr" src="" style="display: none; max-width: 200px; border-radius: 8px;">
+                    <div id="qrCodeDisplay"></div>
+                </div>
+                <div id="upiFallbackSection" style="margin-top: 1rem;">
+                    <a id="upiPaymentLink" href="#" class="btn btn-primary"
+                        style="display: inline-flex; width: auto; padding: 0.75rem 1.5rem;">
+                        📲 Pay with App
+                    </a>
+                    <p class="upi-id" id="upiIdDisplay"
+                        style="margin-top: 0.5rem; font-weight: 600; color: var(--primary-gold); cursor: pointer;"
+                        onclick="copyToClipboard(this.textContent)"></p>
+                </div>
+                <p class="qr-subtitle">Scan QR or click the button to pay</p>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Modern Stats Dashboard -->
+            <div class="stats-dashboard">
+                <div class="stat-box" data-animate="fade-up">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="statsCategories">0</div>
+                        <div class="stat-label">Categories</div>
+                    </div>
+                </div>
+                <div class="stat-box" data-animate="fade-up" style="animation-delay: 0.1s">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="statsTotalAmount">₹0</div>
+                        <div class="stat-label">Total Collection</div>
+                    </div>
+                </div>
+                <div class="stat-box" data-animate="fade-up" style="animation-delay: 0.2s">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="statsTotalDonors">0</div>
+                        <div class="stat-label">Total Donors</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="diya diya-2">🪔</div>
-            </header>
-
-            <!-- QR Code Donation Section -->
-            <div class="qr-donation-section" id="qrDonationSection" style="display: none;">
-                <div class="qr-card">
-                    <h3>💝 Donate via UPI</h3>
-                    <div id="qrCodeDisplay" class="qr-code-container"></div>
-                    <p class="upi-id" id="upiIdDisplay"></p>
-                    <p class="qr-subtitle">Scan with any UPI app to donate</p>
+            <!-- Search & Filter Bar -->
+            <div class="controls-bar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search donor name (Hindi/English)...">
                 </div>
+                <div class="filter-box">
+                    <!-- Status Filter -->
+                    <select id="paymentStatusFilter" style="margin-right: 0.5rem;">
+                        <option value="">Status: All</option>
+                        <option value="paid">Paid (Jo De Diya)</option>
+                        <option value="pledged">Pledged (Jo Nahi Diya)</option>
+                    </select>
+                    <!-- Category Filter -->
+                    <select id="categoryFilter">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                <button id="exportBtn" class="export-btn" title="Export/Print">
+                    📄 Export
+                </button>
+                <button class="btn btn-outline download-btn" onclick="downloadPDF()">
+                    📄 Download PDF
+                </button>
+                <button id="communityNavBtn" class="btn btn-primary" onclick="scrollToCommunity()">
+                    💬 Community
+                </button>
             </div>
 
-            <!-- Main Content -->
-            <main class="main-content">
-                <!-- Modern Stats Dashboard -->
-                <div class="stats-dashboard">
-                    <div class="stat-box" data-animate="fade-up">
-                        <div class="stat-icon">📊</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="statsCategories">0</div>
-                            <div class="stat-label">Categories</div>
-                        </div>
-                    </div>
-                    <div class="stat-box" data-animate="fade-up" style="animation-delay: 0.1s">
-                        <div class="stat-icon">💰</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="statsTotalAmount">₹0</div>
-                            <div class="stat-label">Total Collection</div>
-                        </div>
-                    </div>
-                    <div class="stat-box" data-animate="fade-up" style="animation-delay: 0.2s">
-                        <div class="stat-icon">👥</div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="statsTotalDonors">0</div>
-                            <div class="stat-label">Total Donors</div>
-                        </div>
-                    </div>
-                </div>
+            <!-- Donations Container -->
+            <div class="donations-container" id="donationsContainer">
+                <!-- Donations will be rendered here -->
+            </div>
 
-                <!-- Search & Filter Bar -->
-                <div class="controls-bar">
-                    <div class="search-box">
-                        <span class="search-icon">🔍</span>
-                        <input type="text" id="searchInput" placeholder="Search donor name (Hindi/English)...">
-                    </div>
-                    <div class="filter-box">
-                        <!-- Status Filter -->
-                        <select id="paymentStatusFilter" style="margin-right: 0.5rem;">
-                            <option value="">Status: All</option>
-                            <option value="paid">Paid (Jo De Diya)</option>
-                            <option value="pledged">Pledged (Jo Nahi Diya)</option>
-                        </select>
-                        <!-- Category Filter -->
-                        <select id="categoryFilter">
-                            <option value="">All Categories</option>
-                        </select>
-                    </div>
-                    <button id="exportBtn" class="export-btn" title="Export/Print">
-                        📄 Export
-                    </button>
-                    <button class="btn btn-outline download-btn" onclick="downloadPDF()">
-                        📄 Download PDF
-                    </button>
-                    <button class="btn btn-primary" onclick="scrollToCommunity()">
-                        💬 Community
-                    </button>
-                </div>
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <span class="empty-icon">📭</span>
+                <h3>No donations yet</h3>
+                <p>Donations will appear here once added by admin</p>
+            </div>
 
-                <!-- Donations Container -->
-                <div class="donations-container" id="donationsContainer">
-                    <!-- Donations will be rendered here -->
-                </div>
-
-                <!-- Empty State -->
-                <div class="empty-state" id="emptyState" style="display: none;">
-                    <span class="empty-icon">📭</span>
-                    <h3>No donations yet</h3>
-                    <p>Donations will appear here once added by admin</p>
-                </div>
-
-                <!-- Community Section -->
-                <div id="communitySection" style="display: none; margin-top: 2rem;">
-                    <div class="category-section">
-                        <div class="category-header">
+            <!-- New Community View Overlay -->
+            <div id="communityView" class="community-view-overlay" style="display: none;">
+                <div class="community-content-container">
+                    <div class="community-header-sticky">
+                        <div class="community-title-row">
                             <h2>💬 Community Board</h2>
+                            <button class="close-community-btn" onclick="closeCommunityView()">&times;</button>
+                        </div>
+                        <div class="community-meta-row">
                             <span class="count" id="postCount">0 posts</span>
-                        </div>
-
-                        <!-- Post Form -->
-                        <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-                            <h3 style="margin-bottom: 1rem; color: var(--primary-gold); font-size: 1.2rem;">✍️ Share
-                                Anonymously</h3>
-                            <div class="community-rules"
-                                style="background: rgba(255, 107, 53, 0.1); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 1rem; border-left: 3px solid var(--primary-saffron);">
-                                <p style="margin: 0; font-size: 0.85rem;">⚠️ No abuse | Be respectful | Max 500
-                                    characters</p>
+                            <div class="community-rules-banner">
+                                ⚠️ No abuse | Respect others | Max 500 chars
                             </div>
-                            <form id="communityPostForm">
-                                <textarea id="postContent" placeholder="Share your thoughts..." maxlength="500"
-                                    style="width: 100%; min-height: 100px; background: var(--bg-dark); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 0.75rem; resize: vertical;"></textarea>
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
-                                    <span id="charCount"
-                                        style="font-size: 0.85rem; color: var(--text-muted);">0/500</span>
-                                    <button type="submit" class="btn btn-primary">📤 Post</button>
-                                </div>
-                            </form>
                         </div>
-
-                        <!-- Posts Container -->
-                        <div id="postsContainer"></div>
                     </div>
+
+                    <!-- Post Creation Card -->
+                    <div class="post-creation-card glass-card">
+                        <h3>✍️ Share Anonymously</h3>
+                        <form id="communityPostForm">
+                            <textarea id="postContent" placeholder="What's on your mind?" maxlength="500"></textarea>
+
+                            <!-- Photo Upload Section -->
+                            <div class="photo-upload-container">
+                                <label for="postImageInput" class="photo-upload-label">
+                                    <span class="icon">📷</span> Add Photo (Optional)
+                                </label>
+                                <input type="file" id="postImageInput" accept="image/*" style="display: none;"
+                                    onchange="previewPostImage(event)">
+                                <div id="postImagePreviewContainer"
+                                    style="display: none; position: relative; margin-top: 1rem;">
+                                    <img id="postImagePreview" src=""
+                                        style="max-width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--glass-border);">
+                                    <button type="button" class="remove-img-btn"
+                                        onclick="clearPostImage()">&times;</button>
+                                </div>
+                            </div>
+
+                            <div class="post-form-footer">
+                                <span id="charCount">0/500</span>
+                                <button type="submit" class="btn btn-primary">📤 Share Post</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Posts Stream -->
+                    <div id="postsContainer" class="posts-stream"></div>
                 </div>
-            </main>
+            </div>
 
             <!-- Admin Login Modal -->
             <div class="modal" id="loginModal">
@@ -513,17 +544,38 @@
                                         <span style="font-size: 0.9rem;">Show UPI Payment on Public Page</span>
                                     </label>
                                     <div id="upiSettingsForm" style="display: none;">
-                                        <label style="font-size: 0.9rem; color: var(--text-secondary);">UPI ID / Phone
-                                            Number</label>
-                                        <input type="text" id="upiIdInput" placeholder="example@paytm or 9876543210"
-                                            style="width: 100%; padding: 0.75rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); margin-top: 0.5rem;">
-                                        <button class="btn btn-primary" onclick="saveUPISettings()"
-                                            style="margin-top: 0.5rem;">
-                                            💾 Save UPI Settings
-                                        </button>
-                                        <small style="display: block; margin-top: 0.5rem; color: var(--text-muted);">
-                                            💡 Donors will see a clickable link that opens payment apps
-                                        </small>
+                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                            <label style="font-size: 0.9rem; color: var(--text-secondary);">UPI ID /
+                                                Phone
+                                                Number (Fallback Link)</label>
+                                            <input type="text" id="upiIdInput" placeholder="example@paytm or 9876543210"
+                                                style="width: 100%; padding: 0.75rem; background: var(--bg-dark); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary);">
+
+                                            <label
+                                                style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.5rem;">Upload
+                                                QR Code Image (Optional)</label>
+                                            <input type="file" id="upiQrInput" accept="image/*"
+                                                onchange="previewQrUpload(event)"
+                                                style="width: 100%; padding: 0.5rem; background: var(--bg-dark); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary);">
+                                            <div id="qrUploadPreview"
+                                                style="display: none; text-align: center; margin-top: 0.5rem;">
+                                                <img id="qrPreviewImg" src=""
+                                                    style="max-width: 150px; border-radius: 8px; border: 2px solid var(--primary-gold);">
+                                                <button class="btn btn-outline" onclick="clearQrUpload()"
+                                                    style="margin-top: 0.5rem; padding: 0.25rem 0.75rem; font-size: 0.8rem;">❌
+                                                    Clear QR</button>
+                                            </div>
+
+                                            <button class="btn btn-primary" onclick="saveUPISettings()"
+                                                style="margin-top: 0.5rem;">
+                                                💾 Save UPI Settings
+                                            </button>
+                                            <small
+                                                style="display: block; margin-top: 0.5rem; color: var(--text-muted);">
+                                                💡 Admin can upload a QR image or set a UPI ID. A clickable payment link
+                                                will be generated automatically.
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -707,33 +759,41 @@
                             </div>
                             <button type="submit" class="btn btn-primary">⬆ Import Data</button>
                         </form>
-                        <div id="csvPreview"
-                            style="margin-top: 1rem; max-height: 200px; overflow-y: auto; display: none;">
-                            <h4>Preview:</h4>
-                            <div id="csvPreviewContent"></div>
-                        </div>
                     </div>
                 </div>
+        </main>
 
-                <!-- Toast Notification -->
-                <div class="toast" id="toast">
-                    <span class="toast-icon"></span>
-                    <span class="toast-message"></span>
-                </div>
+        <!-- Toast Notification (outside main) -->
+        <div class="toast" id="toast">
+            <span class="toast-icon"></span>
+            <span class="toast-message"></span>
+        </div>
 
-                <!-- Footer (Compact Mobile Friendly) -->
-                <footer class="compact-footer">
-                    <div class="footer-content">
-                        <p>🙏 Crafted with devotion by Ashish</p>
-                        <div class="footer-links">
-                            <span>© 2026 Temple Tracker</span>
-                            <span class="separator">•</span>
-                            <span>Version 1.0</span>
-                        </div>
+        <!-- Footer (Traditional) -->
+        <footer class="footer">
+            <div class="footer-container">
+                <div class="footer-main">
+                    <div class="footer-brand">
+                        <h2>🛕 Temple Tracker</h2>
+                        <p>Preserving our heritage, one brick at a time.</p>
                     </div>
-                </footer>
+                    <div class="footer-devotion">
+                        <p>🙏 Dedicated to the service of the divine</p>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>© 2026 🙏 Crafted with Devotion by Ashish</p>
+                    <div class="footer-meta">
+                        <span>Version 2.0.0</span>
+                        <span class="dot">•</span>
+                        <span>Secure & Private</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div> <!-- End app-container -->
 
-                <script src="js/app.js"></script>
+    <script src="js/app.js"></script>
 </body>
 
 </html>
