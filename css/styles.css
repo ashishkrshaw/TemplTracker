@@ -5,21 +5,36 @@
 
 /* CSS Variables - Temple Theme */
 :root {
-    /* Colors - Nano Banana Pro */
-    --primary-saffron: #FF5100;
-    --primary-gold: #FFC107;
-    --primary-maroon: #A01010;
-    --accent-gold: #FFD700;
-    --bg-dark: #050505;
-    /* Obsidian */
-    --bg-gradient: linear-gradient(135deg, #050505 0%, #1a0a0a 100%);
-    --card-bg: rgba(255, 255, 255, 0.03);
-    --card-border: rgba(255, 193, 7, 0.15);
-    --glass-bg: rgba(0, 0, 0, 0.4);
-    --glass-border: rgba(255, 193, 7, 0.1);
-    --text-primary: #ffffff;
-    --text-secondary: rgba(255, 255, 255, 0.75);
-    --text-muted: rgba(255, 255, 255, 0.4);
+    /* === HINDU DEVOTIONAL COLOR PALETTE === */
+    /* Primary Spiritual Colors */
+    --primary-saffron: #FF6B35;
+    /* Sacred saffron */
+    --deep-saffron: #FF5100;
+    --primary-gold: #FFD700;
+    /* Divine gold */
+    --accent-gold: #FFBF00;
+    --primary-maroon: #8B1538;
+    /* Temple maroon */
+    --deep-maroon: #5C0A1F;
+
+    /* Sacred Backgrounds */
+    --bg-dark: #0A0403;
+    /* Deep meditation */
+    --bg-gradient: linear-gradient(135deg, #0A0403 0%, #1a0a0a 50%, #2d1510 100%);
+    --surface-overlay: linear-gradient(135deg, rgba(255, 107, 53, 0.05) 0%, rgba(139, 21, 56, 0.03) 100%);
+
+    /* Glass Morphism */
+    --card-bg: rgba(255, 107, 53, 0.08);
+    --card-border: rgba(255, 193, 7, 0.2);
+    --glass-bg: rgba(0, 0, 0, 0.5);
+    --glass-border: rgba(255, 193, 7, 0.15);
+
+    /* Text Colors */
+    --text-primary: #FFF8E7;
+    --text-secondary: rgba(255, 248, 231, 0.8);
+    --text-muted: rgba(255, 193, 7, 0.5);
+
+    /* Status Colors */
     --success: #00E676;
     --error: #FF5252;
     --warning: #FFAB00;
@@ -53,6 +68,27 @@
     --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Modern Palette Overrides */
+    --primary-bg: #121212;
+    --surface-bg: #1E1E1E;
+    --text-on-dark: #E0E0E0;
+}
+
+/* Admin Route Handling */
+body.admin-mode .header,
+body.admin-mode .stats-bar,
+body.admin-mode .controls-bar,
+body.admin-mode .donations-container,
+body.admin-mode .compact-footer,
+body.admin-mode .bg-animations {
+    display: none !important;
+}
+
+body.admin-mode {
+    background: var(--bg-dark);
+    /* Cleaner bg for admin login */
 }
 
 /* Reset & Base */
@@ -75,6 +111,35 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
     line-height: 1.6;
+    position: relative;
+}
+
+/* Sacred Background Pattern */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 215, 0, 0.02) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(139, 21, 56, 0.02) 0%, transparent 50%);
+    z-index: -2;
+    animation: sacredPulse 15s ease-in-out infinite;
+}
+
+@keyframes sacredPulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
 }
 
 /* =====================================================
@@ -345,9 +410,11 @@ body {
     font-family: var(--font-hindi);
     font-size: 2.5rem;
     font-weight: 700;
-    background: linear-gradient(180deg, #fff 20%, var(--primary-gold) 100%);
+    background: linear-gradient(135deg, #ffffff 30%, var(--primary-gold) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     letter-spacing: 1px;
 }
@@ -490,28 +557,37 @@ body {
     }
 }
 
-/* Om Symbol */
+/* OM Symbol - Enhanced Divine Animation */
 .om-symbol {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 15rem;
+    font-size: 50rem;
+    font-family: var(--font-hindi);
+    color: var(--primary-gold);
     opacity: 0.03;
-    animation: omPulse 4s ease-in-out infinite;
+    z-index: -1;
+    animation: omDivineGlow 12s ease-in-out infinite;
+    text-shadow: 0 0 80px rgba(255, 215, 0, 0.2);
+    pointer-events: none;
 }
 
-@keyframes omPulse {
+@keyframes omDivineGlow {
 
     0%,
     100% {
-        opacity: 0.03;
-        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.02;
+        transform: translate(-50%, -50%) scale(0.98) rotate(0deg);
+        text-shadow: 0 0 40px rgba(255, 215, 0, 0.1);
     }
 
     50% {
         opacity: 0.06;
-        transform: translate(-50%, -50%) scale(1.05);
+        transform: translate(-50%, -50%) scale(1.02) rotate(2deg);
+        text-shadow:
+            0 0 100px rgba(255, 215, 0, 0.3),
+            0 0 60px rgba(255, 107, 53, 0.2);
     }
 }
 
@@ -611,6 +687,120 @@ body {
     gap: var(--spacing-lg);
     margin-bottom: var(--spacing-xl);
 }
+
+/* Modern Stats Dashboard */
+.stats-dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.stat-box {
+    background: linear-gradient(135deg,
+            rgba(255, 107, 53, 0.18) 0%,
+            rgba(139, 21, 56, 0.12) 100%);
+    border: 2px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2xl);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    backdrop-filter: blur(12px);
+    transition: var(--transition-normal);
+    animation: fadeUp 0.6s ease forwards;
+    opacity: 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 215, 0, 0.1);
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stat-box[data-animate="fade-up"] {
+    transform: translateY(20px);
+}
+
+.stat-box:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+        0 16px 48px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(255, 215, 0, 0.2),
+        inset 0 0 60px rgba(255, 107, 53, 0.1);
+    border-color: var(--primary-gold);
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.25) 0%, rgba(139, 21, 56, 0.18) 100%);
+}
+
+.stat-box .stat-icon {
+    font-size: 3rem;
+    filter: drop-shadow(0 0 15px rgba(255, 193, 7, 0.4));
+}
+
+.stat-box .stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-box .stat-value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+    .stat-box .stat-label {
+        font-size: 0.85rem;
+    }
+
+    /* Mobile Stats Dashboard */
+    .stats-dashboard {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .stat-box {
+        padding: var(--spacing-md);
+        gap: var(--spacing-md);
+    }
+
+    .stat-box .stat-icon {
+        font-size: 2rem;
+    }
+
+    .stat-box .stat-value {
+        font-size: 1.5rem;
+    }
+
+    .stat-box .stat-label {
+        font-size: 0.75rem;
+    }
+
+    .stat-box::before {
+        font-size: 3rem;
+        bottom: -10px;
+        right: -10px;
+    }
+}
+
+.stat-box .stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 0.25rem;
+}
+
+/* Stats Bar */
 
 .stat-card {
     display: flex;
@@ -717,7 +907,74 @@ body {
 }
 
 /* =====================================================
-   DONATIONS DISPLAY - CARDS VIEW
+   COMMUNITY SECTION - Modern Social Design
+   ===================================================== */
+#communitySection {
+    background: linear-gradient(135deg,
+            rgba(255, 107, 53, 0.06) 0%,
+            rgba(139, 21, 56, 0.04) 100%);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2xl);
+    margin-top: var(--spacing-2xl);
+    border: 2px solid var(--card-border);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 215, 0, 0.1);
+}
+
+#communitySection h2 {
+    font-size: 2rem;
+    color: var(--primary-gold);
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.community-post {
+    background: linear-gradient(135deg,
+            rgba(255, 107, 53, 0.1) 0%,
+            rgba(139, 21, 56, 0.06) 100%);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    transition: var(--transition-normal);
+    animation: fadeInUp 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.community-post::before {
+    content: '\ud83d\udd49\ufe0f';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.5rem;
+    opacity: 0.03;
+}
+
+.community-post:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary-gold);
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(255, 215, 0, 0.1);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =====================================================
+   DONATION CARDS
    ===================================================== */
 .donations-container {
     display: grid;
@@ -1067,6 +1324,65 @@ input[type="file"]::file-selector-button {
     color: var(--text-secondary);
 }
 
+/* QR Code Donation Section */
+.qr-donation-section {
+    max-width: 1400px;
+    margin: 0 auto var(--spacing-xl) auto;
+    padding: 0 var(--spacing-xl);
+}
+
+.qr-card {
+    background: linear-gradient(135deg,
+            rgba(255, 107, 53, 0.15) 0%,
+            rgba(139, 21, 56, 0.1) 100%);
+    border: 2px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2xl);
+    text-align: center;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 215, 0, 0.1);
+    animation: fadeIn 0.6s ease;
+}
+
+.qr-card h3 {
+    color: var(--primary-gold);
+    font-size: 1.8rem;
+    margin-bottom: var(--spacing-lg);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.qr-code-container {
+    background: white;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    display: inline-block;
+    margin: var(--spacing-lg) auto;
+}
+
+.upi-id {
+    font-size: 1.2rem;
+    color: var(--primary-gold);
+    font-weight: 600;
+    margin: var(--spacing-md) 0;
+    cursor: pointer;
+    transition: var(--transition-normal);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: rgba(255, 215, 0, 0.1);
+    border-radius: var(--radius-sm);
+    display: inline-block;
+}
+
+.upi-id:hover {
+    background: rgba(255, 215, 0, 0.2);
+    transform: scale(1.05);
+}
+
+.qr-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
 /* =====================================================
    MODALS
    ===================================================== */
@@ -1340,6 +1656,136 @@ input[type="file"]::file-selector-button {
     font-size: 0.9rem;
 }
 
+/* Admin Navigation Cards */
+.admin-nav-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    /* 2 cards per row */
+    gap: var(--spacing-2xl);
+    padding: var(--spacing-xl) 0;
+}
+
+.admin-card {
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.12) 0%, rgba(139, 21, 56, 0.08) 100%);
+    border: 2px solid var(--card-border);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-2xl) var(--spacing-xl);
+    cursor: pointer;
+    transition: var(--transition-normal);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.admin-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 215, 0, 0.15),
+            transparent);
+    transition: var(--transition-slow);
+}
+
+.admin-card::after {
+    content: '🕉️';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 2rem;
+    opacity: 0.06;
+    transition: var(--transition-normal);
+}
+
+.admin-card:hover::before {
+    left: 100%;
+}
+
+.admin-card:hover::after {
+    opacity: 0.15;
+    transform: rotate(15deg) scale(1.1);
+}
+
+.admin-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow:
+        0 16px 48px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(255, 215, 0, 0.2),
+        inset 0 0 60px rgba(255, 107, 53, 0.1);
+    border-color: var(--primary-gold);
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(139, 21, 56, 0.15) 100%);
+}
+
+.admin-card-icon {
+    font-size: 4.5rem;
+    margin-bottom: var(--spacing-lg);
+    filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.4));
+    animation: iconFloat 3s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.admin-card-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--primary-gold);
+    margin-bottom: var(--spacing-sm);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.admin-card-desc {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+}
+
+/* Admin View Container */
+.admin-view-container {
+    animation: slideInRight 0.4s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.view-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.view-header h3 {
+    font-size: 1.8rem;
+    color: var(--primary-gold);
+    margin: 0;
+}
+
 /* Admin Tabs */
 .admin-tabs {
     display: flex;
@@ -1437,6 +1883,61 @@ input[type="file"]::file-selector-button {
 .admin-table .actions {
     display: flex;
     gap: var(--spacing-xs);
+}
+
+/* Mobile Admin Optimization */
+@media (max-width: 768px) {
+    .admin-panel {
+        padding: var(--spacing-md);
+    }
+
+    .admin-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .admin-table {
+        display: block;
+    }
+
+    .admin-table thead {
+        display: none;
+    }
+
+    .admin-table tbody tr {
+        display: flex;
+        flex-direction: column;
+        background: var(--glass-bg);
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--glass-border);
+    }
+
+    .admin-table td {
+        padding: 0.5rem 0;
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .admin-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        color: var(--primary-gold);
+    }
+
+    .admin-tabs {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-btn {
+        white-space: nowrap;
+    }
 }
 
 /* Categories List (Drag & Drop) */

@@ -297,16 +297,23 @@ function renderDonorCard(donor, index) {
     `;
 }
 
-// Update statistics
-async function updateStats() {
-    try {
-        const stats = await apiGet('/api/stats');
-        document.getElementById('totalDonors').textContent = stats.totalDonors;
-        document.getElementById('totalAmount').textContent = formatCurrency(stats.totalAmount);
-        document.getElementById('totalCategories').textContent = stats.totalCategories;
-    } catch (error) {
-        console.error('Error updating stats:', error);
-    }
+// Update stats on public view
+function updateStats() {
+    const totalDonations = donationsCache.length;
+    const totalAmount = donationsCache.reduce((sum, d) => sum + (d.amount || 0), 0);
+    const totalCategories = categoriesCache.length;
+    const uniqueDonors = new Set(donationsCache.map(d => d.donorName)).size;
+
+    // Update modern stats dashboard
+    const statsCategories = document.getElementById('statsCategories');
+    const statsTotalAmount = document.getElementById('statsTotalAmount');
+    const statsTotalDonors = document.getElementById('statsTotalDonors');
+
+    if (statsCategories) statsCategories.textContent = totalCategories;
+    if (statsTotalAmount) statsTotalAmount.textContent = formatCurrency(totalAmount);
+    if (statsTotalDonors) statsTotalDonors.textContent = uniqueDonors;
+
+    console.log('Stats updated:', { totalCategories, totalAmount, uniqueDonors, totalDonations });
 }
 
 // Populate category filter dropdown
@@ -512,6 +519,9 @@ function updateAdminUIPermissions() {
 
 function openLoginModal() {
     openModal('loginModal');
+    generateCaptcha(); // Generate fresh captcha every time
+    const captchaInput = document.getElementById('captchaInput');
+    if (captchaInput) captchaInput.value = '';
 }
 
 async function handleLogin(e) {
@@ -551,13 +561,18 @@ function logout() {
 }
 
 async function showAdminPanel() {
-    document.getElementById('adminPanel').classList.add('active');
-    await loadAllData();
-    renderPendingApprovals();
+    const panel = document.getElementById('adminPanel');
+    panel.classList.add('active');
+
+    // Show navigation cards, hide view container
+    document.getElementById('adminNavCards').style.display = 'grid';
+    document.getElementById('adminViewContainer').style.display = 'none';
+
+    await loadAllData(); // Load data once for the panel
     renderAdminDonations();
     renderAdminCategories();
     renderSubAdmins();
-    renderLogs();
+    renderLogs(); // Assuming this is the old loadActivityLogs
     populateDonationCategorySelect();
     updateAdminUIPermissions();
 
@@ -1294,18 +1309,37 @@ function populateCSVCategories() {
 window.addEventListener('categoriesLoaded', populateCSVCategories);
 
 // Parse CSV file
+// Parse CSV file
 function parseCSV(text, hasHeaders) {
-    const lines = text.split('\n').filter(line => line.trim());
+    // Better newline handling (supports \r\n, \r, \n)
+    const lines = text.split(/\r\n|\n|\r/).filter(line => line.trim());
     const data = [];
 
     const startIndex = hasHeaders ? 1 : 0;
 
     for (let i = startIndex; i < lines.length; i++) {
         const line = lines[i];
-        // Simple CSV parsing (handles basic cases)
-        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        // Regex to handle identifying values, even with quotes
+        // This is a basic CSV regex; for complex cases, a library is better, but this improves over simple split
+        let values = [];
+        let match;
+        const regex = /(?:^|,)(?:"([^"]*)"|([^",]*))/g;
+        while ((match = regex.exec(line)) !== null) {
+            // match[1] is quoted value, match[2] is unquoted
+            // We ignore empty matches that are just the global update
+            if (match[0] === '' && regex.lastIndex === 0) break; // Avoid infinite loop
+            // Actually, the regex approach for "split" is trickier in loop.
+            // Fallback to simple robust split for this use case if complex formatting isn't expected,
+            // but 'split' handles most User pastes better than complex regex if quotes aren't used.
+            // Let's stick to split for simple pastes, but handle commas inside quotes manually if needed.
+            // Reverting to optimized split ensuring we handle empty columns.
+        }
 
-        if (values.length >= 3) {
+        // Simple robust split that respects quotes roughly
+        const parts = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+        values = parts.map(v => v.trim().replace(/^"|"$/g, ''));
+
+        if (values.length >= 2) { // Allow 2 columns (Name, Amount) at minimum, date optional
             data.push({
                 name: values[0],
                 rashi: values[1],
@@ -1393,21 +1427,29 @@ document.getElementById('csvImportForm')?.addEventListener('submit', async (e) =
         let successCount = 0;
         let errorCount = 0;
 
-        // Import donations
-        for (const row of data) {
-            try {
-                await apiPost('/api/donations', {
+        // Import donations in batches of 5 for speed
+        const BATCH_SIZE = 5;
+        for (let i = 0; i < data.length; i += BATCH_SIZE) {
+            const batch = data.slice(i, i + BATCH_SIZE);
+            const promises = batch.map(row =>
+                apiPost('/api/donations', {
                     donorName: row.name,
                     amount: parseFloat(row.rashi) || 0,
                     date: row.dinank || new Date().toISOString(),
                     categoryId: categoryId,
                     notes: ''
-                });
-                successCount++;
-            } catch (error) {
-                errorCount++;
-                console.error('Error importing row:', row, error);
-            }
+                }).then(() => ({ status: 'fulfilled' }))
+                    .catch(err => ({ status: 'rejected', reason: err, row }))
+            );
+
+            const results = await Promise.all(promises);
+            results.forEach(res => {
+                if (res.status === 'fulfilled') successCount++;
+                else {
+                    errorCount++;
+                    console.error('Failed row:', res.row, res.reason);
+                }
+            });
         }
 
         closeModal('csvImportModal');
@@ -1518,22 +1560,24 @@ document.getElementById('paymentStatusFilter')?.addEventListener('change', (e) =
 
 // ==================== HIDDEN ADMIN TRIGGER ====================
 
+// Check for admin route & Trigger
 function setupAdminTrigger() {
     const adminTrigger = document.getElementById('adminTrigger');
     if (adminTrigger) {
-        // Single click as per user request
         adminTrigger.addEventListener('click', () => {
-            if (!currentUser) {
-                openModal('loginModal');
-            } else {
-                showAdminPanel();
-            }
+            // Navigate to /admin URL instead of just opening modal
+            window.location.href = '/admin';
         });
     }
 
     // Check for admin route
-    if (window.location.hash === '#admin' || window.location.pathname === '/admin') {
-        openModal('loginModal');
+    if (window.location.pathname === '/admin') {
+        document.body.classList.add('admin-mode'); // Hide public view via CSS
+        if (!currentUser) {
+            openLoginModal();
+        } else {
+            showAdminPanel();
+        }
     }
 }
 
@@ -1772,6 +1816,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCommunitySettings();
 });
 
+
 // Navigation helper
 window.scrollToCommunity = function () {
     const section = document.getElementById('communitySection');
@@ -1781,3 +1826,174 @@ window.scrollToCommunity = function () {
         showToast('Community feature is currently disabled.', 'info');
     }
 }
+
+// ==================== UPI PAYMENT FUNCTIONS ====================
+
+function toggleUPIPayment() {
+    const toggle = document.getElementById('upiEnabledToggle');
+    const form = document.getElementById('upiSettingsForm');
+
+    if (toggle.checked) {
+        form.style.display = 'block';
+    } else {
+        form.style.display = 'none';
+        // Hide on public page
+        const section = document.getElementById('qrDonationSection');
+        if (section) section.style.display = 'none';
+
+        // Save disabled state
+        localStorage.setItem('upiEnabled', 'false');
+    }
+}
+
+async function saveUPISettings() {
+    const upiId = document.getElementById('upiIdInput').value.trim();
+    const enabled = document.getElementById('upiEnabledToggle').checked;
+
+    if (!upiId && enabled) {
+        showToast('Please enter UPI ID or Phone Number', 'error');
+        return;
+    }
+
+    // Save to localStorage (you can also save to MongoDB if needed)
+    localStorage.setItem('upiId', upiId);
+    localStorage.setItem('upiEnabled', enabled.toString());
+
+    showToast('UPI settings saved successfully!', 'success');
+
+    // Update public view
+    loadUPIPayment();
+}
+
+function loadUPIPayment() {
+    const upiId = localStorage.getItem('upiId');
+    const enabled = localStorage.getItem('upiEnabled') === 'true';
+    const section = document.getElementById('qrDonationSection');
+
+    if (!section) return;
+
+    if (enabled && upiId) {
+        section.style.display = 'block';
+
+        // Generate UPI payment link
+        const upiLink = upiId.includes('@')
+            ? `upi://pay?pa=${upiId}&pn=Temple Donation&cu=INR`
+            : `upi://pay?pa=${upiId}@paytm&pn=Temple Donation&cu=INR`;
+
+        // Display UPI ID as clickable link
+        const upiDisplay = document.getElementById('upiIdDisplay');
+        if (upiDisplay) {
+            upiDisplay.innerHTML = `<a href="${upiLink}" style="color: var(--primary-gold); text-decoration: none;">
+                📱 ${upiId}
+            </a>`;
+        }
+
+        // Generate QR Code using QR server API
+        const qrDisplay = document.getElementById('qrCodeDisplay');
+        if (qrDisplay) {
+            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
+            qrDisplay.innerHTML = `<img src="${qrCodeUrl}" alt="UPI QR Code" style="width: 200px; height: 200px; border-radius: 8px;">`;
+        }
+    } else {
+        section.style.display = 'none';
+    }
+}
+
+// Load UPI settings in admin panel
+function loadUPISettings() {
+    const upiId = localStorage.getItem('upiId');
+    const enabled = localStorage.getItem('upiEnabled') === 'true';
+
+    const toggle = document.getElementById('upiEnabledToggle');
+    const input = document.getElementById('upiIdInput');
+    const form = document.getElementById('upiSettingsForm');
+
+    if (toggle) toggle.checked = enabled;
+    if (input && upiId) input.value = upiId;
+    if (form && enabled) form.style.display = 'block';
+}
+
+// ==================== IMPROVED BILINGUAL SEARCH ====================
+
+// Hindi-English transliteration map
+const transliterationMap = {
+    // Devanagari to Latin
+    'क': 'k', 'ख': 'kh', 'ग': 'g', 'घ': 'gh', 'ङ': 'ng',
+    'च': 'ch', 'छ': 'chh', 'ज': 'j', 'झ': 'jh', 'ञ': 'ny',
+    'ट': 't', 'ठ': 'th', 'ड': 'd', 'ढ': 'dh', 'ण': 'n',
+    'त': 't', 'थ': 'th', 'द': 'd', 'ध': 'dh', 'न': 'n',
+    'प': 'p', 'फ': 'ph', 'ब': 'b', 'भ': 'bh', 'म': 'm',
+    'य': 'y', 'र': 'r', 'ल': 'l', 'व': 'v', 'w': 'v',
+    'श': 'sh', 'ष': 'sh', 'स': 's', 'ह': 'h',
+    'ा': 'a', 'ि': 'i', 'ी': 'i', 'ु': 'u', 'ू': 'u',
+    'े': 'e', 'ै': 'ai', 'ो': 'o', 'ौ': 'au',
+    'ं': 'm', 'ः': 'h', '्': '',
+    'अ': 'a', 'आ': 'a', 'इ': 'i', 'ई': 'i',
+    'उ': 'u', 'ऊ': 'u', 'ए': 'e', 'ऐ': 'ai',
+    'ओ': 'o', 'औ': 'au'
+};
+
+function transliterate(text) {
+    return text.split('').map(char => transliterationMap[char] || char).join('');
+}
+
+function normalizeForSearch(text) {
+    // Convert to lowercase and transliterate
+    const lower = text.toLowerCase();
+    const transliterated = transliterate(lower);
+    return { original: lower, transliterated };
+}
+
+function betterSearch(searchTerm, donations) {
+    if (!searchTerm) return donations;
+
+    const { original: searchOrig, transliterated: searchTrans } = normalizeForSearch(searchTerm);
+
+    return donations.filter(donation => {
+        const { original: nameOrig, transliterated: nameTrans } = normalizeForSearch(donation.donorName);
+
+        // Match in either original or transliterated form
+        return nameOrig.includes(searchOrig) ||
+            nameTrans.includes(searchTrans) ||
+            nameOrig.includes(searchTrans) ||
+            nameTrans.includes(searchOrig);
+    });
+}
+
+// Update the existing search listener to use better search
+function setupImprovedSearch() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+
+    // Remove old listener and add new one
+    const newInput = searchInput.cloneNode(true);
+    searchInput.parentNode.replaceChild(newInput, searchInput);
+
+    let searchTimeout;
+    newInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            const searchTerm = e.target.value.trim();
+            const filtered = betterSearch(searchTerm, donationsCache);
+            renderPublicView(filtered);
+        }, 300);
+    });
+}
+
+// Initialize all new features
+document.addEventListener('DOMContentLoaded', () => {
+    initApp();
+    setupAdminTrigger();
+    handleSplash();
+    loadCommunitySettings();
+    loadUPIPayment(); // Load UPI payment on public page
+    setupImprovedSearch(); // Setup bilingual search
+});
+
+// Load UPI settings when admin panel is shown
+const originalShowAdminPanel = showAdminPanel;
+showAdminPanel = async function () {
+    await originalShowAdminPanel();
+    loadUPISettings();
+}
+

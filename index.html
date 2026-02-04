@@ -78,11 +78,9 @@
 
 <body>
     <!-- Splash Screen -->
-    <div id="splashScreen">
+    <div class="splash-screen" id="splashScreen">
         <div class="splash-content">
-            <img src="images/modern_om_splash.png" alt="Om" class="splash-logo">
-            <div class="splash-text">Temple Tracker</div>
-            <div class="splash-subtext">Optimized for Devotion</div>
+            <img src="assets/hanuman_divine.png" alt="Hanuman Ji" class="hanuman-image">
         </div>
     </div>
 
@@ -99,47 +97,45 @@
         <!-- Top Banner -->
         <div class="top-banner">
             <div class="banner-content">
-                <span>⚜️ जय श्री राम ⚜️</span>
+                <p class="subtitle">Building Faith, Brick by Brick</p>
             </div>
-        </div>
 
-        <div class="app-container">
-            <!-- Header -->
-            <header class="header">
-                <div class="diya diya-1" id="adminTrigger" title="Double click for Admin">🪔</div>
-
-                <div class="temple-banner">
-                    <div class="temple-icon">🛕</div>
-                    <h1>श्री मंदिर निर्माण दान</h1>
-                    <p class="subtitle">Building Faith, Brick by Brick</p>
-                </div>
-
-                <div class="diya diya-2">🪔</div>
+            <div class="diya diya-2">🪔</div>
             </header>
+
+            <!-- QR Code Donation Section -->
+            <div class="qr-donation-section" id="qrDonationSection" style="display: none;">
+                <div class="qr-card">
+                    <h3>💝 Donate via UPI</h3>
+                    <div id="qrCodeDisplay" class="qr-code-container"></div>
+                    <p class="upi-id" id="upiIdDisplay"></p>
+                    <p class="qr-subtitle">Scan with any UPI app to donate</p>
+                </div>
+            </div>
 
             <!-- Main Content -->
             <main class="main-content">
-                <!-- Stats Bar -->
-                <div class="stats-bar" id="statsBar">
-                    <div class="stat-card">
-                        <span class="stat-icon">👥</span>
+                <!-- Modern Stats Dashboard -->
+                <div class="stats-dashboard">
+                    <div class="stat-box" data-animate="fade-up">
+                        <div class="stat-icon">📊</div>
                         <div class="stat-info">
-                            <span class="stat-value" id="totalDonors">0</span>
-                            <span class="stat-label">Total Donors</span>
+                            <div class="stat-value" id="statsCategories">0</div>
+                            <div class="stat-label">Categories</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <span class="stat-icon">💰</span>
+                    <div class="stat-box" data-animate="fade-up" style="animation-delay: 0.1s">
+                        <div class="stat-icon">💰</div>
                         <div class="stat-info">
-                            <span class="stat-value" id="totalAmount">₹0</span>
-                            <span class="stat-label">Total Collection</span>
+                            <div class="stat-value" id="statsTotalAmount">₹0</div>
+                            <div class="stat-label">Total Collection</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <span class="stat-icon">📁</span>
+                    <div class="stat-box" data-animate="fade-up" style="animation-delay: 0.2s">
+                        <div class="stat-icon">👥</div>
                         <div class="stat-info">
-                            <span class="stat-value" id="totalCategories">0</span>
-                            <span class="stat-label">Categories (Tola)</span>
+                            <div class="stat-value" id="statsTotalDonors">0</div>
+                            <div class="stat-label">Total Donors</div>
                         </div>
                     </div>
                 </div>
@@ -249,24 +245,63 @@
                 </div>
             </div>
 
-            <!-- Admin Panel -->
+            <!-- Admin Panel (Card-Based Navigation) -->
             <div class="admin-panel" id="adminPanel">
                 <div class="admin-header">
-                    <h2>⚙️ Admin Dashboard</h2>
+                    <h2>👑 Admin Dashboard</h2>
                     <div class="admin-actions">
                         <span id="currentUserDisplay"></span>
                         <button class="btn btn-outline" onclick="logout()">Logout</button>
                     </div>
                 </div>
 
-                <!-- Admin Tabs -->
-                <div class="admin-tabs">
-                    <button class="tab-btn active" data-tab="approvals">✅ Approvals <span class="badge"
-                            id="pendingCountBadge">0</span></button>
-                    <button class="tab-btn" data-tab="donations">📝 Donations</button>
-                    <button class="tab-btn" data-tab="categories">📁 Categories</button>
-                    <button class="tab-btn" data-tab="community">💬 Community</button>
-                    <button class="tab-btn" data-tab="subadmins">👥 Sub-Admins</button>
+                <!-- Admin Navigation Cards (Main View) -->
+                <div id="adminNavCards" class="admin-nav-cards">
+                    <div class="admin-card" onclick="showAdminView('donations')">
+                        <div class="admin-card-icon">📋</div>
+                        <div class="admin-card-title">Donations</div>
+                        <div class="admin-card-desc">Manage all donations</div>
+                    </div>
+                    <div class="admin-card" onclick="showAdminView('categories')">
+                        <div class="admin-card-icon">📁</div>
+                        <div class="admin-card-title">Categories</div>
+                        <div class="admin-card-desc">Manage tolas & categories</div>
+                    </div>
+                    <div class="admin-card" onclick="showAdminView('subadmins')">
+                        <div class="admin-card-icon">👥</div>
+                        <div class="admin-card-title">Sub-Admins</div>
+                        <div class="admin-card-desc">Manage team members</div>
+                    </div>
+                    <div class="admin-card" onclick="showAdminView('settings')">
+                        <div class="admin-card-icon">⚙️</div>
+                        <div class="admin-card-title">Settings</div>
+                        <div class="admin-card-desc">App configuration</div>
+                    </div>
+                    <div class="admin-card" onclick="showAdminView('community')">
+                        <div class="admin-card-icon">💬</div>
+                        <div class="admin-card-title">Community</div>
+                        <div class="admin-card-desc">Moderate posts</div>
+                    </div>
+                    <div class="admin-card" onclick="showAdminView('logs')">
+                        <div class="admin-card-icon">📊</div>
+                        <div class="admin-card-title">Activity Logs</div>
+                        <div class="admin-card-desc">View system activity</div>
+                    </div>
+                </div>
+
+                <!-- Admin View Container (Shows when card clicked) -->
+                <div id="adminViewContainer" class="admin-view-container" style="display: none;">
+                    <div class="view-header">
+                        <button class="btn btn-outline" onclick="backToAdminNav()">
+                            ← Back to Dashboard
+                        </button>
+                        <h3 id="viewTitle"></h3>
+                    </div>
+                    <div id="viewContent"></div>
+                </div>
+
+                <!-- Old Admin Tabs Section (Keep for reference, will be moved to views) -->
+                <div id="oldAdminContent" style="display: none;">
                     <button class="tab-btn" data-tab="logs">📋 Logs</button>
                     <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
                 </div>
@@ -454,6 +489,32 @@
                             <label>Export Data</label>
                             <button class="btn btn-outline" onclick="exportData()">📥 Export JSON</button>
                         </div>
+
+                        <!-- UPI Payment Settings -->
+                        <div class="setting-item">
+                            <label>💳 UPI Payment Link</label>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="checkbox" id="upiEnabledToggle" onchange="toggleUPIPayment()"
+                                        style="width: 18px; height: 18px;">
+                                    <span style="font-size: 0.9rem;">Show UPI Payment on Public Page</span>
+                                </label>
+                                <div id="upiSettingsForm" style="display: none;">
+                                    <label style="font-size: 0.9rem; color: var(--text-secondary);">UPI ID / Phone
+                                        Number</label>
+                                    <input type="text" id="upiIdInput" placeholder="example@paytm or 9876543210"
+                                        style="width: 100%; padding: 0.75rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); margin-top: 0.5rem;">
+                                    <button class="btn btn-primary" onclick="saveUPISettings()"
+                                        style="margin-top: 0.5rem;">
+                                        💾 Save UPI Settings
+                                    </button>
+                                    <small style="display: block; margin-top: 0.5rem; color: var(--text-muted);">
+                                        💡 Donors will see a clickable link that opens payment apps
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="setting-item">
                             <label>Import Data</label>
                             <input type="file" id="importFile" accept=".json" onchange="importData(event)"
