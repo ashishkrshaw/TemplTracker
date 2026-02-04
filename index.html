@@ -255,37 +255,49 @@
                     </div>
                 </div>
 
-                <!-- Admin Navigation Cards (Main View) -->
-                <div id="adminNavCards" class="admin-nav-cards">
+                <!-- Admin Navigation Cards -->
+                <div class="admin-nav-cards" id="adminNavCards">
                     <div class="admin-card" onclick="showAdminView('donations')">
-                        <div class="admin-card-icon">📋</div>
-                        <div class="admin-card-title">Donations</div>
-                        <div class="admin-card-desc">Manage all donations</div>
+                        <div class="admin-card-icon">�</div>
+                        <div class="admin-card-title">Manage Donations</div>
+                        <div class="admin-card-desc">Add, Edit or Delete Donation Records</div>
                     </div>
+
                     <div class="admin-card" onclick="showAdminView('categories')">
                         <div class="admin-card-icon">📁</div>
-                        <div class="admin-card-title">Categories</div>
-                        <div class="admin-card-desc">Manage tolas & categories</div>
+                        <div class="admin-card-title">Manage Categories</div>
+                        <div class="admin-card-desc">Organize Areas (Tolas)</div>
                     </div>
+
                     <div class="admin-card" onclick="showAdminView('subadmins')">
                         <div class="admin-card-icon">👥</div>
                         <div class="admin-card-title">Sub-Admins</div>
-                        <div class="admin-card-desc">Manage team members</div>
+                        <div class="admin-card-desc">Manage Permissions & Access</div>
                     </div>
+
                     <div class="admin-card" onclick="showAdminView('settings')">
                         <div class="admin-card-icon">⚙️</div>
                         <div class="admin-card-title">Settings</div>
-                        <div class="admin-card-desc">App configuration</div>
+                        <div class="admin-card-desc">UPI, Password & Configuration</div>
                     </div>
+
                     <div class="admin-card" onclick="showAdminView('community')">
                         <div class="admin-card-icon">💬</div>
                         <div class="admin-card-title">Community</div>
-                        <div class="admin-card-desc">Moderate posts</div>
+                        <div class="admin-card-desc">Moderate Discussion Board</div>
                     </div>
+
                     <div class="admin-card" onclick="showAdminView('logs')">
-                        <div class="admin-card-icon">📊</div>
+                        <div class="admin-card-icon">�</div>
                         <div class="admin-card-title">Activity Logs</div>
-                        <div class="admin-card-desc">View system activity</div>
+                        <div class="admin-card-desc">View System History</div>
+                    </div>
+
+                    <div class="admin-card" onclick="showAdminView('approvals')">
+                        <div class="admin-card-icon">✅</div>
+                        <div class="admin-card-title">Approvals</div>
+                        <div class="admin-card-desc">Review Pending Donations (<span id="pendingCountCard">0</span>)
+                        </div>
                     </div>
                 </div>
 
@@ -295,429 +307,433 @@
                         <button class="btn btn-outline" onclick="backToAdminNav()">
                             ← Back to Dashboard
                         </button>
-                        <h3 id="viewTitle"></h3>
+                        <h3 id="viewTitle">Management View</h3>
                     </div>
                     <div id="viewContent"></div>
                 </div>
 
-                <!-- Old Admin Tabs Section (Keep for reference, will be moved to views) -->
-                <div id="oldAdminContent" style="display: none;">
-                    <button class="tab-btn" data-tab="logs">📋 Logs</button>
-                    <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
-                </div>
+                <!-- Hidden tabs section to source content from (kept for JS compatibility) -->
+                <div id="adminHiddenTabs" style="display: none;">
+                    <!-- Content will be moved to viewContent dynamically -->
 
-                <!-- Approvals Tab -->
-                <div class="tab-content active" id="approvalsTab">
-                    <div class="tab-header">
-                        <h3>Pending Approvals</h3>
-                        <span style="color: var(--warning)">⚠️ Requires Review</span>
-                    </div>
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Donor</th>
-                                    <th>Amount</th>
-                                    <th>Date</th>
-                                    <th>Category</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="approvalsTableBody">
-                            </tbody>
-                        </table>
-                        <div id="noApprovalsMsg" class="empty-message">No pending approvals</div>
-                    </div>
-                </div>
-
-                <!-- Donations Tab -->
-                <div class="tab-content" id="donationsTab">
-                    <div class="tab-header">
-                        <h2>💰 Manage Donations</h2>
-                        <button class="btn btn-primary" onclick="openModal('donationModal')">➕ Add Donation</button>
-                        <button class="btn btn-secondary" onclick="openModal('csvImportModal')"
-                            style="margin-left: 0.5rem;">📤 Import CSV</button>
-                    </div>
-                    <div class="admin-table-container">
-                        <table class="admin-table" id="donationsTable">
-                            <thead>
-                                <tr>
-                                    <th>Donor Name</th>
-                                    <th>Amount</th>
-                                    <th>Date</th>
-                                    <th>Category</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="donationsTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Categories Tab -->
-                <div class="tab-content" id="categoriesTab">
-                    <div class="tab-header">
-                        <h3>Manage Categories (Tola)</h3>
-                        <button class="btn btn-primary" onclick="openAddCategoryModal()" id="addCategoryBtn">+ Add
-                            Category</button>
-                    </div>
-                    <div class="categories-list" id="categoriesList">
-                        <!-- Categories with drag handles will be rendered here -->
-                    </div>
-                </div>
-
-                <!-- Sub-Admins Tab -->
-                <div class="tab-content" id="subadminsTab">
-                    <div class="tab-header">
-                        <h3>Manage Sub-Admins</h3>
-                        <button class="btn btn-primary" onclick="openAddSubAdminModal()" id="addSubAdminBtn">+ Add
-                            Sub-Admin</button>
-                    </div>
-                    <div class="subadmins-list" id="subadminsList">
-                        <!-- Sub-admins will be rendered here -->
-                    </div>
-                </div>
-
-                <!-- Community Tab -->
-                <div class="tab-content" id="communityTab">
-                    <div class="tab-header">
-                        <h2>💬 Community Moderation</h2>
-                        <button class="btn btn-primary" onclick="loadAdminCommunityPosts()">🔄 Refresh</button>
-                    </div>
-                    <div
-                        style="background: rgba(255, 107, 53, 0.1); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; border-left: 3px solid var(--primary-saffron);">
-                        <p style="margin: 0; font-size: 0.9rem;">⚠️ All posts are logged with IP addresses. You can
-                            delete inappropriate content.</p>
-                    </div>
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Content</th>
-                                    <th>IP & Date</th>
-                                    <th>Replies</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="communityPostsTableBody">
-                                <tr>
-                                    <td colspan="4" style="text-align: center; padding: 2rem;">No posts yet</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Activity Logs Tab -->
-                <div class="tab-content" id="logsTab">
-                    <div class="tab-header">
-                        <h3>📋 Activity Logs</h3>
-                        <span style="color: var(--success); font-size: 0.9rem;">🔒 Non-Deletable Records</span>
-                    </div>
-                    <div class="logs-filter" style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
-                        <select id="logActionFilter" onchange="filterLogs()"
-                            style="padding: 0.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 8px;">
-                            <option value="">All Actions</option>
-                            <option value="LOGIN">Login</option>
-                            <option value="ADD">Add</option>
-                            <option value="EDIT">Edit</option>
-                            <option value="DELETE">Delete</option>
-                        </select>
-                        <select id="logEntityFilter" onchange="filterLogs()"
-                            style="padding: 0.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 8px;">
-                            <option value="">All Types</option>
-                            <option value="DONATION">Donations</option>
-                            <option value="CATEGORY">Categories</option>
-                            <option value="SUBADMIN">Sub-Admins</option>
-                            <option value="AUTH">Authentication</option>
-                        </select>
-                    </div>
-                    <div class="admin-table-container">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Time</th>
-                                    <th>User</th>
-                                    <th>Action</th>
-                                    <th>Type</th>
-                                    <th>Details</th>
-                                </tr>
-                            </thead>
-                            <tbody id="logsTableBody">
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="logs-pagination" id="logsPagination"
-                        style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem;"></div>
-                </div>
-
-                <!-- Settings Tab -->
-                <div class="tab-content" id="settingsTab">
-                    <div class="settings-section">
-                        <h3>Display Settings</h3>
-                        <div class="setting-item">
-                            <label>Public View Layout</label>
-                            <div class="toggle-group">
-                                <button class="toggle-btn active" data-view="cards" onclick="setViewMode('cards')">🃏
-                                    Cards</button>
-                                <button class="toggle-btn" data-view="list" onclick="setViewMode('list')">📋
-                                    List</button>
-                            </div>
+                    <!-- Approvals Tab -->
+                    <div class="tab-content active" id="approvalsTab">
+                        <div class="tab-header">
+                            <h3>Pending Approvals</h3>
+                            <span style="color: var(--warning)">⚠️ Requires Review</span>
                         </div>
-                        <div class="setting-item">
-                            <label>Change Admin Password</label>
-                            <button class="btn btn-outline" onclick="openChangePasswordModal()">Change Password</button>
+                        <div class="admin-table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Donor</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                        <th>Category</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="approvalsTableBody">
+                                </tbody>
+                            </table>
+                            <div id="noApprovalsMsg" class="empty-message">No pending approvals</div>
                         </div>
-                        <div class="setting-item">
-                            <label>💬 Community Feature</label>
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="checkbox" id="communityToggle" onchange="toggleCommunity()"
-                                    style="width: 18px; height: 18px;">
-                                <span style="font-size: 0.9rem;">Enable Public Community Board</span>
-                            </label>
-                        </div>
-                        <div class="setting-item">
-                            <label>📅 Show Dates on Cards</label>
-                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                <input type="checkbox" id="showDatesToggle" onchange="toggleShowDates()" checked
-                                    style="width: 18px; height: 18px;">
-                                <span style="font-size: 0.9rem;">Display dates on donation cards</span>
-                            </label>
-                        </div>
-                        <div class="setting-item">
-                            <label>Export Data</label>
-                            <button class="btn btn-outline" onclick="exportData()">📥 Export JSON</button>
-                        </div>
+                    </div>
 
-                        <!-- UPI Payment Settings -->
-                        <div class="setting-item">
-                            <label>💳 UPI Payment Link</label>
-                            <div style="display: flex; flex-direction: column; gap: 1rem;">
-                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                                    <input type="checkbox" id="upiEnabledToggle" onchange="toggleUPIPayment()"
-                                        style="width: 18px; height: 18px;">
-                                    <span style="font-size: 0.9rem;">Show UPI Payment on Public Page</span>
-                                </label>
-                                <div id="upiSettingsForm" style="display: none;">
-                                    <label style="font-size: 0.9rem; color: var(--text-secondary);">UPI ID / Phone
-                                        Number</label>
-                                    <input type="text" id="upiIdInput" placeholder="example@paytm or 9876543210"
-                                        style="width: 100%; padding: 0.75rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); margin-top: 0.5rem;">
-                                    <button class="btn btn-primary" onclick="saveUPISettings()"
-                                        style="margin-top: 0.5rem;">
-                                        💾 Save UPI Settings
-                                    </button>
-                                    <small style="display: block; margin-top: 0.5rem; color: var(--text-muted);">
-                                        💡 Donors will see a clickable link that opens payment apps
-                                    </small>
+                    <!-- Donations Tab -->
+                    <div class="tab-content" id="donationsTab">
+                        <div class="tab-header">
+                            <h2>💰 Manage Donations</h2>
+                            <button class="btn btn-primary" onclick="openModal('donationModal')">➕ Add Donation</button>
+                            <button class="btn btn-secondary" onclick="openModal('csvImportModal')"
+                                style="margin-left: 0.5rem;">📤 Import CSV</button>
+                        </div>
+                        <div class="admin-table-container">
+                            <table class="admin-table" id="donationsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Donor Name</th>
+                                        <th>Amount</th>
+                                        <th>Date</th>
+                                        <th>Category</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="donationsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Categories Tab -->
+                    <div class="tab-content" id="categoriesTab">
+                        <div class="tab-header">
+                            <h3>Manage Categories (Tola)</h3>
+                            <button class="btn btn-primary" onclick="openAddCategoryModal()" id="addCategoryBtn">+ Add
+                                Category</button>
+                        </div>
+                        <div class="categories-list" id="categoriesList">
+                            <!-- Categories with drag handles will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Sub-Admins Tab -->
+                    <div class="tab-content" id="subadminsTab">
+                        <div class="tab-header">
+                            <h3>Manage Sub-Admins</h3>
+                            <button class="btn btn-primary" onclick="openAddSubAdminModal()" id="addSubAdminBtn">+ Add
+                                Sub-Admin</button>
+                        </div>
+                        <div class="subadmins-list" id="subadminsList">
+                            <!-- Sub-admins will be rendered here -->
+                        </div>
+                    </div>
+
+                    <!-- Community Tab -->
+                    <div class="tab-content" id="communityTab">
+                        <div class="tab-header">
+                            <h2>💬 Community Moderation</h2>
+                            <button class="btn btn-primary" onclick="loadAdminCommunityPosts()">🔄 Refresh</button>
+                        </div>
+                        <div
+                            style="background: rgba(255, 107, 53, 0.1); padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1.5rem; border-left: 3px solid var(--primary-saffron);">
+                            <p style="margin: 0; font-size: 0.9rem;">⚠️ All posts are logged with IP addresses. You can
+                                delete inappropriate content.</p>
+                        </div>
+                        <div class="admin-table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Content</th>
+                                        <th>IP & Date</th>
+                                        <th>Replies</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="communityPostsTableBody">
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; padding: 2rem;">No posts yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Activity Logs Tab -->
+                    <div class="tab-content" id="logsTab">
+                        <div class="tab-header">
+                            <h3>📋 Activity Logs</h3>
+                            <span style="color: var(--success); font-size: 0.9rem;">🔒 Non-Deletable Records</span>
+                        </div>
+                        <div class="logs-filter"
+                            style="display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                            <select id="logActionFilter" onchange="filterLogs()"
+                                style="padding: 0.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 8px;">
+                                <option value="">All Actions</option>
+                                <option value="LOGIN">Login</option>
+                                <option value="ADD">Add</option>
+                                <option value="EDIT">Edit</option>
+                                <option value="DELETE">Delete</option>
+                            </select>
+                            <select id="logEntityFilter" onchange="filterLogs()"
+                                style="padding: 0.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); border-radius: 8px;">
+                                <option value="">All Types</option>
+                                <option value="DONATION">Donations</option>
+                                <option value="CATEGORY">Categories</option>
+                                <option value="SUBADMIN">Sub-Admins</option>
+                                <option value="AUTH">Authentication</option>
+                            </select>
+                        </div>
+                        <div class="admin-table-container">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>User</th>
+                                        <th>Action</th>
+                                        <th>Type</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logsTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="logs-pagination" id="logsPagination"
+                            style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem;"></div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div class="tab-content" id="settingsTab">
+                        <div class="settings-section">
+                            <h3>Display Settings</h3>
+                            <div class="setting-item">
+                                <label>Public View Layout</label>
+                                <div class="toggle-group">
+                                    <button class="toggle-btn active" data-view="cards"
+                                        onclick="setViewMode('cards')">🃏
+                                        Cards</button>
+                                    <button class="toggle-btn" data-view="list" onclick="setViewMode('list')">📋
+                                        List</button>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="setting-item">
-                            <label>Import Data</label>
-                            <input type="file" id="importFile" accept=".json" onchange="importData(event)"
-                                style="display:none">
-                            <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">📤
-                                Import
-                                JSON</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Add/Edit Donation Modal -->
-            <div class="modal" id="donationModal">
-                <div class="modal-content glass-card">
-                    <div class="modal-header">
-                        <h2 id="donationModalTitle">Add Donation</h2>
-                        <button class="close-btn" onclick="closeModal('donationModal')">&times;</button>
-                    </div>
-                    <form id="donationForm">
-                        <input type="hidden" id="donationId">
-                        <div class="form-group">
-                            <label>Donor Name *</label>
-                            <input type="text" id="donorName" placeholder="Enter donor name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Amount (₹) *</label>
-                            <input type="number" id="donationAmount" placeholder="Enter amount" required min="1">
-                        </div>
-                        <div class="form-group">
-                            <label>Date *</label>
-                            <input type="date" id="donationDate" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Category (Tola) *</label>
-                            <select id="donationCategory" required>
-                                <option value="">Select category</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Notes (Optional)</label>
-                            <textarea id="donationNotes" placeholder="Any additional notes..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save Donation</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Add/Edit Category Modal -->
-            <div class="modal" id="categoryModal">
-                <div class="modal-content glass-card">
-                    <div class="modal-header">
-                        <h2 id="categoryModalTitle">Add Category</h2>
-                        <button class="close-btn" onclick="closeModal('categoryModal')">&times;</button>
-                    </div>
-                    <form id="categoryForm">
-                        <input type="hidden" id="categoryId">
-                        <div class="form-group">
-                            <label>Category Name (Tola) *</label>
-                            <input type="text" id="categoryName" placeholder="e.g., Ram Nagar Tola" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save Category</button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Add/Edit Sub-Admin Modal -->
-            <div class="modal" id="subAdminModal">
-                <div class="modal-content glass-card">
-                    <div class="modal-header">
-                        <h2 id="subAdminModalTitle">Add Sub-Admin</h2>
-                        <button class="close-btn" onclick="closeModal('subAdminModal')">&times;</button>
-                    </div>
-                    <form id="subAdminForm">
-                        <input type="hidden" id="subAdminId">
-                        <div class="form-group">
-                            <label>Username *</label>
-                            <input type="text" id="subAdminUsername" placeholder="Enter username" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Password *</label>
-                            <input type="password" id="subAdminPassword" placeholder="Enter password">
-                            <small class="form-hint">Leave blank to keep existing password (when editing)</small>
-                        </div>
-                        <div class="form-group">
-                            <label>Permissions</label>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="permAddDonation" checked>
-                                    <span>Can Add Donations</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="permEditDonation">
-                                    <span>Can Edit Donations</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="permDeleteDonation">
-                                    <span>Can Delete Donations</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="permManageCategory">
-                                    <span>Can Manage Categories</span>
+                            <div class="setting-item">
+                                <label>Change Admin Password</label>
+                                <button class="btn btn-outline" onclick="openChangePasswordModal()">Change
+                                    Password</button>
+                            </div>
+                            <div class="setting-item">
+                                <label>💬 Community Feature</label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="checkbox" id="communityToggle" onchange="toggleCommunity()"
+                                        style="width: 18px; height: 18px;">
+                                    <span style="font-size: 0.9rem;">Enable Public Community Board</span>
                                 </label>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Assigned Categories</label>
-                            <div class="checkbox-group" id="assignedCategoriesGroup">
-                                <!-- Will be populated dynamically -->
+                            <div class="setting-item">
+                                <label>📅 Show Dates on Cards</label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                    <input type="checkbox" id="showDatesToggle" onchange="toggleShowDates()" checked
+                                        style="width: 18px; height: 18px;">
+                                    <span style="font-size: 0.9rem;">Display dates on donation cards</span>
+                                </label>
                             </div>
-                            <small class="form-hint">Leave all unchecked to allow all categories</small>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Save Sub-Admin</button>
-                    </form>
-                </div>
-            </div>
+                            <div class="setting-item">
+                                <label>Export Data</label>
+                                <button class="btn btn-outline" onclick="exportData()">📥 Export JSON</button>
+                            </div>
 
-            <!-- Change Password Modal -->
-            <div class="modal" id="changePasswordModal">
-                <div class="modal-content glass-card">
-                    <div class="modal-header">
-                        <h2>Change Password</h2>
-                        <button class="close-btn" onclick="closeModal('changePasswordModal')">&times;</button>
-                    </div>
-                    <form id="changePasswordForm">
-                        <div class="form-group">
-                            <label>Current Password *</label>
-                            <input type="password" id="currentPassword" required>
-                        </div>
-                        <div class="form-group">
-                            <label>New Password *</label>
-                            <input type="password" id="newPassword" required minlength="4">
-                        </div>
-                        <div class="form-group">
-                            <label>Confirm New Password *</label>
-                            <input type="password" id="confirmPassword" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Update Password</button>
-                    </form>
-                </div>
-            </div>
+                            <!-- UPI Payment Settings -->
+                            <div class="setting-item">
+                                <label>💳 UPI Payment Link</label>
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="upiEnabledToggle" onchange="toggleUPIPayment()"
+                                            style="width: 18px; height: 18px;">
+                                        <span style="font-size: 0.9rem;">Show UPI Payment on Public Page</span>
+                                    </label>
+                                    <div id="upiSettingsForm" style="display: none;">
+                                        <label style="font-size: 0.9rem; color: var(--text-secondary);">UPI ID / Phone
+                                            Number</label>
+                                        <input type="text" id="upiIdInput" placeholder="example@paytm or 9876543210"
+                                            style="width: 100%; padding: 0.75rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-primary); margin-top: 0.5rem;">
+                                        <button class="btn btn-primary" onclick="saveUPISettings()"
+                                            style="margin-top: 0.5rem;">
+                                            💾 Save UPI Settings
+                                        </button>
+                                        <small style="display: block; margin-top: 0.5rem; color: var(--text-muted);">
+                                            💡 Donors will see a clickable link that opens payment apps
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
 
-            <!-- CSV Import Modal -->
-            <div class="modal" id="csvImportModal">
-                <div class="modal-content glass-card">
-                    <div class="modal-header">
-                        <h2>📤 Import Donations from CSV</h2>
-                        <button class="close-btn" onclick="closeModal('csvImportModal')">&times;</button>
-                    </div>
-                    <form id="csvImportForm">
-                        <div class="form-group">
-                            <label>Select Category / टोला *</label>
-                            <select id="csvCategoryId" required>
-                                <option value="">Choose category...</option>
-                            </select>
-                            <small class="form-hint">All imported donations will be added to this category</small>
+                            <div class="setting-item">
+                                <label>Import Data</label>
+                                <input type="file" id="importFile" accept=".json" onchange="importData(event)"
+                                    style="display:none">
+                                <button class="btn btn-outline"
+                                    onclick="document.getElementById('importFile').click()">📤
+                                    Import
+                                    JSON</button>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Upload CSV File</label>
-                            <input type="file" id="csvFile" accept=".csv">
-                        </div>
-                        <div style="text-align: center; color: var(--text-muted); margin: 0.5rem 0; font-size: 0.9rem;">
-                            — OR —</div>
-                        <div class="form-group">
-                            <label>Paste Data (CSV Format)</label>
-                            <textarea id="csvText" placeholder="Format: Name, Amount, Date" rows="5"
-                                style="width: 100%; background: var(--glass-bg); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem;"></textarea>
-                            <small class="form-hint">Columns: "name", "rashi" (amount), "dinank" (date)</small>
-                        </div>
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="csvHasHeaders" checked>
-                                <span>File has header row</span>
-                            </label>
-                        </div>
-                        <button type="submit" class="btn btn-primary">⬆ Import Data</button>
-                    </form>
-                    <div id="csvPreview" style="margin-top: 1rem; max-height: 200px; overflow-y: auto; display: none;">
-                        <h4>Preview:</h4>
-                        <div id="csvPreviewContent"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Toast Notification -->
-            <div class="toast" id="toast">
-                <span class="toast-icon"></span>
-                <span class="toast-message"></span>
-            </div>
-
-            <!-- Footer (Compact Mobile Friendly) -->
-            <footer class="compact-footer">
-                <div class="footer-content">
-                    <p>🙏 Crafted with devotion by Ashish</p>
-                    <div class="footer-links">
-                        <span>© 2026 Temple Tracker</span>
-                        <span class="separator">•</span>
-                        <span>Version 1.0</span>
+                <!-- Add/Edit Donation Modal -->
+                <div class="modal" id="donationModal">
+                    <div class="modal-content glass-card">
+                        <div class="modal-header">
+                            <h2 id="donationModalTitle">Add Donation</h2>
+                            <button class="close-btn" onclick="closeModal('donationModal')">&times;</button>
+                        </div>
+                        <form id="donationForm">
+                            <input type="hidden" id="donationId">
+                            <div class="form-group">
+                                <label>Donor Name *</label>
+                                <input type="text" id="donorName" placeholder="Enter donor name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Amount (₹) *</label>
+                                <input type="number" id="donationAmount" placeholder="Enter amount" required min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>Date *</label>
+                                <input type="date" id="donationDate" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Category (Tola) *</label>
+                                <select id="donationCategory" required>
+                                    <option value="">Select category</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Notes (Optional)</label>
+                                <textarea id="donationNotes" placeholder="Any additional notes..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Donation</button>
+                        </form>
                     </div>
                 </div>
-            </footer>
 
-            <script src="js/app.js"></script>
+                <!-- Add/Edit Category Modal -->
+                <div class="modal" id="categoryModal">
+                    <div class="modal-content glass-card">
+                        <div class="modal-header">
+                            <h2 id="categoryModalTitle">Add Category</h2>
+                            <button class="close-btn" onclick="closeModal('categoryModal')">&times;</button>
+                        </div>
+                        <form id="categoryForm">
+                            <input type="hidden" id="categoryId">
+                            <div class="form-group">
+                                <label>Category Name (Tola) *</label>
+                                <input type="text" id="categoryName" placeholder="e.g., Ram Nagar Tola" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Category</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Add/Edit Sub-Admin Modal -->
+                <div class="modal" id="subAdminModal">
+                    <div class="modal-content glass-card">
+                        <div class="modal-header">
+                            <h2 id="subAdminModalTitle">Add Sub-Admin</h2>
+                            <button class="close-btn" onclick="closeModal('subAdminModal')">&times;</button>
+                        </div>
+                        <form id="subAdminForm">
+                            <input type="hidden" id="subAdminId">
+                            <div class="form-group">
+                                <label>Username *</label>
+                                <input type="text" id="subAdminUsername" placeholder="Enter username" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Password *</label>
+                                <input type="password" id="subAdminPassword" placeholder="Enter password">
+                                <small class="form-hint">Leave blank to keep existing password (when editing)</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Permissions</label>
+                                <div class="checkbox-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="permAddDonation" checked>
+                                        <span>Can Add Donations</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="permEditDonation">
+                                        <span>Can Edit Donations</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="permDeleteDonation">
+                                        <span>Can Delete Donations</span>
+                                    </label>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="permManageCategory">
+                                        <span>Can Manage Categories</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Assigned Categories</label>
+                                <div class="checkbox-group" id="assignedCategoriesGroup">
+                                    <!-- Will be populated dynamically -->
+                                </div>
+                                <small class="form-hint">Leave all unchecked to allow all categories</small>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save Sub-Admin</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Change Password Modal -->
+                <div class="modal" id="changePasswordModal">
+                    <div class="modal-content glass-card">
+                        <div class="modal-header">
+                            <h2>Change Password</h2>
+                            <button class="close-btn" onclick="closeModal('changePasswordModal')">&times;</button>
+                        </div>
+                        <form id="changePasswordForm">
+                            <div class="form-group">
+                                <label>Current Password *</label>
+                                <input type="password" id="currentPassword" required>
+                            </div>
+                            <div class="form-group">
+                                <label>New Password *</label>
+                                <input type="password" id="newPassword" required minlength="4">
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm New Password *</label>
+                                <input type="password" id="confirmPassword" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- CSV Import Modal -->
+                <div class="modal" id="csvImportModal">
+                    <div class="modal-content glass-card">
+                        <div class="modal-header">
+                            <h2>📤 Import Donations from CSV</h2>
+                            <button class="close-btn" onclick="closeModal('csvImportModal')">&times;</button>
+                        </div>
+                        <form id="csvImportForm">
+                            <div class="form-group">
+                                <label>Select Category / टोला *</label>
+                                <select id="csvCategoryId" required>
+                                    <option value="">Choose category...</option>
+                                </select>
+                                <small class="form-hint">All imported donations will be added to this category</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Upload CSV File</label>
+                                <input type="file" id="csvFile" accept=".csv">
+                            </div>
+                            <div
+                                style="text-align: center; color: var(--text-muted); margin: 0.5rem 0; font-size: 0.9rem;">
+                                — OR —</div>
+                            <div class="form-group">
+                                <label>Paste Data (CSV Format)</label>
+                                <textarea id="csvText" placeholder="Format: Name, Amount, Date" rows="5"
+                                    style="width: 100%; background: var(--glass-bg); color: var(--text-primary); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.5rem;"></textarea>
+                                <small class="form-hint">Columns: "name", "rashi" (amount), "dinank" (date)</small>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="csvHasHeaders" checked>
+                                    <span>File has header row</span>
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">⬆ Import Data</button>
+                        </form>
+                        <div id="csvPreview"
+                            style="margin-top: 1rem; max-height: 200px; overflow-y: auto; display: none;">
+                            <h4>Preview:</h4>
+                            <div id="csvPreviewContent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Toast Notification -->
+                <div class="toast" id="toast">
+                    <span class="toast-icon"></span>
+                    <span class="toast-message"></span>
+                </div>
+
+                <!-- Footer (Compact Mobile Friendly) -->
+                <footer class="compact-footer">
+                    <div class="footer-content">
+                        <p>🙏 Crafted with devotion by Ashish</p>
+                        <div class="footer-links">
+                            <span>© 2026 Temple Tracker</span>
+                            <span class="separator">•</span>
+                            <span>Version 1.0</span>
+                        </div>
+                    </div>
+                </footer>
+
+                <script src="js/app.js"></script>
 </body>
 
 </html>

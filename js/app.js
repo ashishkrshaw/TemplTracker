@@ -591,6 +591,72 @@ function hideAdminPanel() {
     document.getElementById('adminPanel').classList.remove('active');
 }
 
+// ==================== ADMIN CARD NAVIGATION ====================
+
+function showAdminView(viewName) {
+    // Hide navigation cards
+    const navCards = document.getElementById('adminNavCards');
+    if (navCards) navCards.style.display = 'none';
+
+    // Show view container
+    const viewContainer = document.getElementById('adminViewContainer');
+    if (viewContainer) viewContainer.style.display = 'block';
+
+    const viewContent = document.getElementById('viewContent');
+    const viewTitle = document.getElementById('viewTitle');
+
+    // Get the content from the corresponding tab
+    let tabContent = '';
+    let title = '';
+
+    switch (viewName) {
+        case 'donations':
+            title = '📋 Manage Donations';
+            tabContent = document.getElementById('donationsTab');
+            break;
+        case 'categories':
+            title = '📁 Manage Categories';
+            tabContent = document.getElementById('categoriesTab');
+            break;
+        case 'subadmins':
+            title = '👥 Sub-Admin Management';
+            tabContent = document.getElementById('subadminsTab');
+            break;
+        case 'settings':
+            title = '⚙️ Settings & Configuration';
+            tabContent = document.getElementById('settingsTab');
+            break;
+        case 'community':
+            title = '💬 Community Moderation';
+            tabContent = document.getElementById('communityTab');
+            break;
+        case 'logs':
+            title = '📊 Activity Logs';
+            tabContent = document.getElementById('logsTab');
+            break;
+        case 'approvals':
+            title = '✅ Pending Approvals';
+            tabContent = document.getElementById('approvalsTab');
+            break;
+    }
+
+    if (viewTitle) viewTitle.textContent = title;
+    if (viewContent && tabContent) {
+        // Show the tab content directly
+        viewContent.innerHTML = tabContent.innerHTML;
+    }
+}
+
+function backToAdminNav() {
+    // Show navigation cards
+    const navCards = document.getElementById('adminNavCards');
+    if (navCards) navCards.style.display = 'grid';
+
+    // Hide view container
+    const viewContainer = document.getElementById('adminViewContainer');
+    if (viewContainer) viewContainer.style.display = 'none';
+}
+
 // ==================== DONATIONS CRUD ====================
 
 function openAddDonationModal() {
