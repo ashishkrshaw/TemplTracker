@@ -130,6 +130,37 @@ body::before {
     animation: sacredPulse 15s ease-in-out infinite;
 }
 
+/* Divine Hanuman Background Watermark */
+body::after {
+    content: '';
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vh;
+    height: 80vh;
+    background: url('../assets/hanuman_divine.png') no-repeat center center;
+    background-size: contain;
+    opacity: 0.03;
+    /* Subtle watermark */
+    z-index: -3;
+    pointer-events: none;
+    filter: sepia(0.2) drop-shadow(0 0 20px rgba(255, 107, 53, 0.1));
+    animation: divineFloat 20s ease-in-out infinite;
+}
+
+@keyframes divineFloat {
+
+    0%,
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.05);
+    }
+}
+
 @keyframes sacredPulse {
 
     0%,
